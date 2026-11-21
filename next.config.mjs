@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Évite qu'une petite erreur de type bloque la mise en ligne.
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  experimental: {
+    serverActions: { bodySizeLimit: '4.5mb' },
+  },
 };
 export default nextConfig;
