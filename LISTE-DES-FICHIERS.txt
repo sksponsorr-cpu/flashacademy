@@ -1,0 +1,11 @@
+LISTE DES FICHIERS FLASH ACADEMY
+Tous les fichiers doivent être à la racine du dépôt GitHub, en gardant les dossiers.
+
+Racine : package.json, next.config.mjs, tsconfig.json, middleware.ts, .env.example, .gitignore
+supabase/schema.sql
+lib/access.ts, lib/session.ts, lib/supabase/server.ts
+components/BottomNav.tsx, components/ChatForm.tsx
+app/layout.tsx, app/globals.css, app/page.tsx
+app/connexion/page.tsx
+app/auth/callback/route.ts
+app/espace/ (actions.ts, layout.tsx, page.tsx, profil/, membres/, messages/, formations/, recettes/, offres/, ressources/, partenaire/, admin/)
