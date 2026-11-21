@@ -6,6 +6,8 @@ import { publierPublication } from './actions';
 export const dynamic = 'force-dynamic';
 
 const raccourcis = [
+  ['/espace/ami', '🤖 Agence Ami'],
+  ['/espace/ami/admin', '🧠 Consignes Ami'],
   ['/espace/recettes', '🍲 Recettes'],
   ['/espace/offres', '✨ Offres'],
   ['/espace/ressources/replays', '🎬 Replays'],
