@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flash Academy</title>
+<style>
+:root{--bg:#f5f6fb;--card:#fff;--text:#1d1d1f;--muted:#6b6f80;--accent:#2563eb;--red:#ef4444;--green:#16a34a;--line:#e3e5ee;--soft:#eef2ff;--ease:cubic-bezier(.22,1,.36,1)}
+:root[data-theme="dark"]{--bg:#070a14;--card:#0f1424;--text:#f2f3f7;--muted:#9aa3bd;--accent:#4f8cff;--red:#f87171;--green:#4ade80;--line:#1c2438;--soft:#131c36}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#070a14;--card:#0f1424;--text:#f2f3f7;--muted:#9aa3bd;--accent:#4f8cff;--red:#f87171;--green:#4ade80;--line:#1c2438;--soft:#131c36}}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+body.app{padding-bottom:86px}
+button,input,textarea,select{font-family:inherit}
+.hidden{display:none!important}
+.view{animation:viewIn .5s var(--ease) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+h2{font-size:22px;letter-spacing:-.3px;margin:6px 0 6px}
+h3{font-size:16px;margin:0 0 4px}
+.muted{color:var(--muted);font-size:14px;line-height:1.5}
+.row{display:flex;gap:10px;align-items:center}
+.grow{flex:1}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.2px}.logo span{color:var(--accent)}
+.logoMark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#4f8cff,#2563eb);color:#fff;display:inline-grid;place-items:center;font-weight:800;margin-right:8px;vertical-align:middle}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 85%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:12px 16px}
+.iconbtn{background:none;border:0;color:var(--text);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:18px}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#4f8cff,#8b5cf6);color:#fff;display:grid;place-items:center;font-weight:700;cursor:pointer;flex-shrink:0;background-size:cover;background-position:center}
+.burger{width:42px;height:42px;border-radius:12px;border:0;background:var(--soft);cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;padding:0}
+.burger i{display:block;width:18px;height:2px;border-radius:2px;background:var(--accent);transition:transform .35s var(--ease),opacity .25s}
+.burger.open i:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.burger.open i:nth-child(2){opacity:0}
+.burger.open i:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:15;opacity:0;pointer-events:none;transition:opacity .3s var(--ease)}
+.overlay.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:290px;max-width:84vw;background:var(--card);z-index:20;padding:calc(env(safe-area-inset-top,0px) + 84px) 14px 24px;overflow-y:auto;border-right:1px solid var(--line);transform:translateX(-105%);transition:transform .45s var(--ease)}
+.drawer.open{transform:none}
+.drawer h4{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);margin:18px 10px 6px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;color:var(--text);padding:10px;border-radius:12px;font-size:15px;cursor:pointer}
+.nav-item .ico{width:30px;height:30px;border-radius:9px;background:var(--soft);display:grid;place-items:center;flex-shrink:0;font-size:15px}
+.nav-item:hover,.nav-item.active{background:var(--soft)}
+.nav-item.active{color:var(--accent);font-weight:600}
+.nav-item .lock{margin-left:auto;font-size:12px;color:var(--muted)}
+
+.tabbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:10;background:color-mix(in srgb,var(--card) 92%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid var(--line);justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px))}
+body.app .tabbar{display:flex}
+.tabbar button{background:none;border:0;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;font-weight:600;cursor:pointer;flex:1;transition:transform .2s var(--ease),color .2s}
+.tabbar .t{font-size:21px;line-height:1}
+.tabbar button.active{color:var(--accent)}
+.tabbar button:active{transform:scale(.9)}
+
+main{max-width:720px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;transition:transform .35s var(--ease),box-shadow .35s var(--ease)}
+.card.lift:hover{transform:translateY(-3px);box-shadow:0 14px 32px rgba(0,0,0,.12)}
+.card.click{cursor:pointer}
+.thumb{width:100%;aspect-ratio:16/9;border-radius:14px;background:linear-gradient(135deg,#1e3a8a,#8b5cf6);display:grid;place-items:center;color:#fff;font-size:40px;position:relative;overflow:hidden;background-size:cover;background-position:center;cursor:pointer}
+.thumb .play{width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.22);backdrop-filter:blur(6px);display:grid;place-items:center;font-size:22px}
+.thumb.sm{aspect-ratio:auto;height:64px;width:64px;flex-shrink:0;font-size:24px;border-radius:12px;cursor:default}
+.tag{display:inline-block;font-size:12px;padding:4px 10px;border-radius:99px;background:var(--soft);color:var(--accent);margin-right:6px;font-weight:600}
+.tag.red{background:#fee2e2;color:#b91c1c}.tag.grey{background:var(--line);color:var(--muted)}.tag.green{background:#dcfce7;color:#166534}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:12px;padding:11px 16px;font-weight:600;cursor:pointer;font-size:15px;transition:transform .2s var(--ease),filter .2s;text-align:center}
+.btn:hover{filter:brightness(1.08)}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:none;color:var(--accent);border:1px solid var(--accent)}
+.btn.danger{background:var(--red)}
+.btn.sm{padding:7px 12px;font-size:13px}
+.btn.block{width:100%}
+.btn.locked{background:var(--line);color:var(--muted)}
+.grid{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:620px){.grid{grid-template-columns:1fr 1fr}}
+.progress{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.progress div{height:100%;background:linear-gradient(90deg,var(--accent),#8b5cf6);border-radius:99px;transition:width .8s var(--ease)}
+.mod{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:1px solid var(--line);font-size:15px;gap:10px}
+.mod.done span{color:var(--muted);text-decoration:line-through}
+.mod.locked span{color:var(--muted)}
+.empty{text-align:center;color:var(--muted);padding:30px}
+input,textarea,select{width:100%;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:12px;padding:11px;font-size:15px;margin-top:6px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent)}
+label{display:block;margin-top:12px;font-size:13px;color:var(--muted);font-weight:600}
+.story{border-left:3px solid var(--accent)}
+.chat-item{display:flex;gap:12px;align-items:center;padding:12px;border-radius:14px;cursor:pointer}
+.chat-item:hover{background:var(--card)}
+.bubble{max-width:75%;padding:10px 14px;border-radius:18px;margin:6px 0;font-size:15px;line-height:1.4;animation:viewIn .35s var(--ease) both}
+.bubble.me{margin-left:auto;background:var(--accent);color:#fff;border-bottom-right-radius:6px}
+.bubble.them{background:var(--soft);border-bottom-left-radius:6px}
+.composer{display:flex;gap:8px;margin-top:12px}
+.composer input{margin:0}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:24px}
+
+/* Bureau administrateur : étapes */
+.steps{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;margin:0 -2px;scrollbar-width:none}
+.steps::-webkit-scrollbar{display:none}
+.step{flex-shrink:0;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:8px}
+.step b{width:22px;height:22px;border-radius:50%;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-size:12px}
+.step.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.step.active b{background:#fff;color:var(--accent)}
+.adm-head{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
+.adm-head .n{width:36px;height:36px;border-radius:12px;background:var(--soft);color:var(--accent);display:grid;place-items:center;font-weight:800}
+
+.switch{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}
+.switch input{width:46px;height:26px;margin:0;appearance:none;background:var(--line);border-radius:99px;position:relative;cursor:pointer;transition:background .25s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .25s var(--ease)}
+.switch input:checked{background:var(--green)}
+.switch input:checked::after{transform:translateX(20px)}
+
+/* Accueil public */
+#home{background:var(--bg)}
+.topbar-home{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.pill{display:inline-block;border:1px solid var(--accent);color:var(--accent);border-radius:99px;padding:6px 14px;font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.hero{text-align:center;padding:26px 6px 10px}
+.hero h1{font-size:34px;line-height:1.12;letter-spacing:-.8px;margin:16px 0 14px}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p.lead{font-size:17px;color:var(--muted);line-height:1.55;margin:0 auto 22px;max-width:520px}
+.cta{display:block;width:100%;max-width:420px;margin:0 auto;padding:16px;font-size:17px;border-radius:14px;box-shadow:0 10px 30px rgba(37,99,235,.35)}
+.sub{font-size:13px;color:var(--muted);margin-top:10px}
+.video-box{margin:26px 0;border-radius:20px;overflow:hidden;position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,#0b1a44,#2563eb 60%,#8b5cf6);display:grid;place-items:center;cursor:pointer;border:1px solid var(--line)}
+.video-box .play{width:74px;height:74px;border-radius:50%;background:rgba(255,255,255,.95);color:var(--accent);display:grid;place-items:center;font-size:26px;padding-left:5px;box-shadow:0 10px 30px rgba(0,0,0,.3);transition:transform .3s var(--ease)}
+.video-box:hover .play{transform:scale(1.08)}
+.video-box small{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#fff;font-size:14px;opacity:.9}
+.section{padding:28px 0 6px}
+.section > .pill{margin-bottom:10px}
+.section h2{font-size:26px;letter-spacing:-.5px;line-height:1.2;margin:0 0 10px}
+.section h2 em{font-style:normal;color:var(--accent)}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.chip{background:var(--card);border:1px solid var(--line);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600}
+.proof{display:grid;gap:12px;grid-template-columns:1fr}
+@media(min-width:620px){.proof{grid-template-columns:1fr 1fr 1fr}}
+.quote{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+.quote .who{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.quote .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#4f8cff,#8b5cf6);color:#fff;display:grid;place-items:center;font-weight:700}
+.problem ul{padding-left:0;list-style:none;margin:0}
+.problem li{margin:0 0 10px;line-height:1.5;color:var(--muted)}
+.problem li::before{content:"✕ ";color:var(--red);font-weight:700}
+.founder-photo{width:100%;aspect-ratio:4/5;border-radius:20px;background:linear-gradient(160deg,#1f2937,#0f172a);background-size:cover;background-position:center;display:grid;place-items:center;color:#fff;font-size:60px;margin-bottom:14px;border:1px solid var(--line)}
+.offers{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:620px){.offers{grid-template-columns:1fr 1fr}}
+.offer{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px}
+.offer.best{border-color:var(--accent);box-shadow:0 14px 40px rgba(37,99,235,.2)}
+.offer .price{font-size:32px;font-weight:800;letter-spacing:-.5px;margin:8px 0 2px}
+.offer .price small{font-size:14px;color:var(--muted);font-weight:500}
+.offer ul{padding:0;margin:14px 0;list-style:none}
+.offer li{margin:0 0 8px;color:var(--muted)}
+.offer li::before{content:"✓ ";color:var(--green);font-weight:700}
+.countdown{background:linear-gradient(135deg,#0b1a44,#1e3a8a);color:#fff;border-radius:20px;padding:22px;text-align:center}
+.countdown h3{color:#fff;font-size:20px;margin:6px 0 4px}
+.clock{display:flex;justify-content:center;gap:8px;margin:16px 0}
+.clock div{background:rgba(255,255,255,.1);border-radius:12px;padding:10px 8px;min-width:68px}
+.clock b{display:block;font-size:24px}
+.clock small{font-size:11px;opacity:.8;text-transform:uppercase}
+.faq details{border-top:1px solid var(--line);padding:14px 0}
+.faq details:first-child{border-top:0}
+.faq summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:10px;font-size:15px}
+.faq summary::after{content:"+";color:var(--accent);font-size:20px;line-height:1}
+.faq details[open] summary::after{content:"−"}
+.faq p{color:var(--muted);margin:8px 0 0;line-height:1.5}
+.finalcta{text-align:center;padding:30px 20px;border-radius:22px;background:linear-gradient(135deg,#1e3a8a,#2563eb 60%,#8b5cf6);color:#fff;margin:30px 0 10px}
+.finalcta h2{color:#fff;margin:0 0 8px}
+.finalcta p{opacity:.9;margin:0 0 18px}
+.finalcta .btn{background:#fff;color:var(--accent)}
+
+/* Profil */
+.profile{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-bottom:14px}
+.cover{height:140px;background:linear-gradient(120deg,#1e3a8a,#2563eb 45%,#8b5cf6 80%,#ef4444)}
+.pbody{padding:0 18px 16px}
+.pavatar{width:104px;height:104px;border-radius:50%;background:linear-gradient(135deg,#4f8cff,#ef4444);color:#fff;display:grid;place-items:center;font-size:40px;font-weight:800;border:5px solid var(--card);margin-top:-52px;box-shadow:0 8px 24px rgba(0,0,0,.2);background-size:cover;background-position:center}
+.pname{font-size:22px;font-weight:800;margin-top:10px;display:flex;align-items:center;gap:6px}
+.badge{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px}
+.stats{display:flex;gap:22px;margin:14px 0 4px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stats div{text-align:center}.stats b{display:block;font-size:17px}.stats small{color:var(--muted);font-size:12px}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tab{flex:1;background:none;border:0;padding:12px 6px;color:var(--muted);font-weight:600;cursor:pointer;font-size:14px}
+.tab.active{color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
+
+.toast{position:fixed;left:50%;bottom:100px;transform:translate(-50%,160%);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:14px;font-weight:600;font-size:14px;z-index:40;transition:transform .5s var(--ease);max-width:90vw;text-align:center}
+.toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ============ ACCUEIL PUBLIC ============ -->
+<div id="home">
+  <div class="topbar-home">
+    <div class="logo"><span class="logoMark">FA</span>Flash<span>Academy</span></div>
+    <div class="row">
+      <button class="iconbtn" id="theme1" aria-label="Thème">☾</button>
+      <button class="btn sm" data-enter>Rejoindre</button>
+    </div>
+  </div>
+  <main>
+    <section class="hero">
+      <span class="pill">Formations · Live · Communauté</span>
+      <h1 id="hTitle"></h1>
+      <p class="lead" id="hText"></p>
+      <button class="btn cta" data-enter>Rejoindre Flash Academy</button>
+      <div class="sub">Accès immédiat après inscription</div>
+    </section>
+
+    <div class="video-box" id="hVideo"><div class="play">▶</div><small>Clique ici pour regarder la vidéo de présentation</small></div>
+
+    <section class="section">
+      <span class="pill">Les formations</span>
+      <h2>Des formations <em>concrètes</em>, sans jargon</h2>
+      <p class="muted">Chaque formation est découpée en modules courts que vous pouvez regarder à votre rythme.</p>
+      <div class="chips"><span class="chip">🎵 Formation TikTok</span><span class="chip">🚀 Formation SaaS</span><span class="chip">🎬 Montage Vidéo</span></div>
+    </section>
+
+    <section class="section">
+      <span class="pill">Témoignages</span>
+      <h2>Ils ont déjà <em>avancé</em></h2>
+      <div class="proof" id="proof"></div>
+    </section>
+
+    <section class="section">
+      <span class="pill">Le problème</span>
+      <h2>Vous voulez gagner de l'argent en ligne, mais <em>vous ne savez pas par où commencer</em> ?</h2>
+      <div class="card problem">
+        <ul>
+          <li>Trop de vidéos gratuites, aucun plan clair</li>
+          <li>Des conseils qui ne marchent pas dans votre contexte</li>
+          <li>L'envie est là, mais les résultats tardent</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section">
+      <span class="pill">Le fondateur</span>
+      <div class="founder-photo" id="founderPhoto">FA</div>
+      <h2>Un fondateur qui <em>accompagne</em> au quotidien</h2>
+      <p class="muted" id="founderText"></p>
+    </section>
+
+    <section class="section">
+      <span class="pill">Nos offres</span>
+      <h2>Choisissez votre <em>offre</em></h2>
+      <div class="offers" id="offers"></div>
+    </section>
+
+    <section class="section">
+      <div class="countdown">
+        <span class="pill" style="border-color:#93c5fd;color:#bfdbfe">Offre limitée</span>
+        <h3>Plus que <span id="places">11</span> places disponibles</h3>
+        <p class="muted" style="color:#cbd5e1">Le tarif de lancement disparaît à la fin du compte à rebours.</p>
+        <div class="clock">
+          <div><b id="cH">00</b><small>Heures</small></div>
+          <div><b id="cM">00</b><small>Minutes</small></div>
+          <div><b id="cS">00</b><small>Secondes</small></div>
+        </div>
+        <button class="btn block" data-enter>Réserver ma place →</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <span class="pill">Questions fréquentes</span>
+      <h2>Vos questions</h2>
+      <div class="card faq" id="faq"></div>
+    </section>
+
+    <div class="finalcta">
+      <h2>Prêt à passer à l'action ?</h2>
+      <p>Rejoignez la communauté et commencez votre première formation aujourd'hui.</p>
+      <button class="btn" data-enter>Rejoindre Flash Academy</button>
+    </div>
+  </main>
+  <footer>© 2026 Flash Academy · Mentions légales</footer>
+</div>
+
+<!-- ============ ESPACE ============ -->
+<div id="app" class="hidden">
+  <header>
+    <button class="burger" id="burger" aria-label="Menu"><i></i><i></i><i></i></button>
+    <div class="logo">Flash<span>Academy</span></div>
+    <div class="grow"></div>
+    <button class="iconbtn" id="theme2" aria-label="Thème">☾</button>
+    <div class="avatar" id="hAvatar" data-go="profil">S</div>
+  </header>
+
+  <nav class="drawer" id="drawer">
+    <h4>Accueil</h4>
+    <button class="nav-item" data-go="flux"><span class="ico">🏠</span>Actualités</button>
+    <button class="nav-item" data-go="live"><span class="ico">🔴</span>Sessions live</button>
+    <h4>Espace formation</h4>
+    <div id="menuCourses"></div>
+    <h4>Communauté</h4>
+    <button class="nav-item" data-go="membres"><span class="ico">👥</span>Membres</button>
+    <button class="nav-item" data-go="messages"><span class="ico">💬</span>Messages<span class="lock" id="lockMsg"></span></button>
+    <button class="nav-item" data-go="recettes"><span class="ico">🍲</span>Recettes</button>
+    <h4>Ressources</h4>
+    <button class="nav-item" data-go="replays"><span class="ico">🎬</span>Replays<span class="lock lk"></span></button>
+    <button class="nav-item" data-go="partenariats"><span class="ico">🤝</span>Partenariats<span class="lock lk"></span></button>
+    <button class="nav-item" data-go="evenements"><span class="ico">📅</span>Événements</button>
+    <h4>Abonnement</h4>
+    <button class="nav-item" data-go="offres"><span class="ico">✨</span>Offres</button>
+    <h4>Espaces</h4>
+    <button class="nav-item" data-go="admin" data-role="admin"><span class="ico">🛠️</span>Bureau administrateur</button>
+    <button class="nav-item" data-go="partner" data-role="partner"><span class="ico">💼</span>Espace partenaire</button>
+    <h4>Compte</h4>
+    <button class="nav-item" data-home><span class="ico">🚪</span>Retour à l'accueil</button>
+  </nav>
+  <div class="overlay" id="overlay"></div>
+
+  <main>
+    <!-- ACTUALITÉS -->
+    <section id="v-flux" class="view">
+      <div class="thumb" id="welcomeVid" style="margin-bottom:14px"><div class="play">▶</div><span style="position:absolute;bottom:12px;left:14px;font-size:14px;font-weight:700">Vidéo très IMPORTANTE !</span></div>
+      <div class="card" id="bannerProfile"><div class="row"><div class="grow"><strong>Validez votre profil (20 %)</strong><div class="muted">Ajoutez votre photo, votre titre et votre biographie.</div></div><button class="btn sm" data-edit="1">Compléter</button></div></div>
+      <div class="card" id="bannerAccess"><div class="row"><div class="grow"><strong>Vous êtes en accès visiteur</strong><div class="muted">Débloquez toutes les formations et la messagerie.</div></div><button class="btn sm" data-go="offres">Voir les offres</button></div></div>
+      <div class="card"><input id="postIn" placeholder="Quoi de neuf, sam123 ?"><button class="btn block" id="postBtn" style="margin-top:8px">Publier</button></div>
+      <div id="feed"></div>
+    </section>
+
+    <!-- MEMBRES -->
+    <section id="v-membres" class="view hidden">
+      <h2>Membres de la communauté</h2>
+      <p class="muted">Touchez une personne pour voir son profil.</p>
+      <div id="members" style="margin-top:12px"></div>
+    </section>
+
+    <!-- PROFIL -->
+    <section id="v-profil" class="view hidden">
+      <button class="btn ghost sm hidden" id="backProfile" data-back="membres">← Membres</button>
+      <div id="profileRoot" style="margin-top:10px"></div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section id="v-messages" class="view hidden">
+      <h2>Messages</h2>
+      <div id="convList" style="margin-top:8px"></div>
+      <div id="convView" class="hidden">
+        <div class="row" style="margin-bottom:8px"><button class="btn ghost sm" id="backConv">← Messages</button><b id="chatWith"></b></div>
+        <div id="chatBody"></div>
+        <div id="composerBox"></div>
+      </div>
+    </section>
+
+    <!-- FORMATIONS -->
+    <section id="v-formations" class="view hidden">
+      <h2>Espace formation</h2>
+      <p class="muted">Toutes les formations incluses dans les offres.</p>
+      <div class="grid" id="courses" style="margin-top:12px"></div>
+    </section>
+    <section id="v-cours" class="view hidden">
+      <button class="btn ghost sm" data-back="formations">← Formations</button>
+      <div id="courseDetail" style="margin-top:12px"></div>
+    </section>
+
+    <!-- OFFRES (espace) -->
+    <section id="v-offres" class="view hidden">
+      <h2>Offres</h2>
+      <p class="muted" id="offerStatus"></p>
+      <div class="offers" id="offersSpace" style="margin-top:12px"></div>
+    </section>
+
+    <!-- RECETTES -->
+    <section id="v-recettes" class="view hidden">
+      <h2>Recettes</h2>
+      <p class="muted">Recettes publiées par les membres.</p>
+      <div id="recFormBox" style="margin-top:12px"></div>
+      <div id="recList"></div>
+    </section>
+
+    <!-- LIVE / REPLAYS / AUTRES -->
+    <section id="v-live" class="view hidden"><h2>Sessions live</h2><div id="lives" style="margin-top:12px"></div></section>
+    <section id="v-replays" class="view hidden"><h2>Replays</h2><div id="replays" style="margin-top:12px"></div></section>
+    <section id="v-partenariats" class="view hidden"><h2>Partenariats</h2><div class="card"><h3>Partenaire exemple</h3><p class="muted">Offre exclusive pour les membres.</p></div></section>
+    <section id="v-evenements" class="view hidden"><h2>Événements</h2><div class="card"><h3>Masterclass exemple</h3><p class="muted">Samedi, 19h</p><button class="btn">Je m'inscris</button></div></section>
+
+    <!-- BUREAU ADMIN : ÉTAPES -->
+    <section id="v-admin" class="view hidden">
+      <h2>Bureau administrateur</h2>
+      <div class="steps" id="steps">
+        <button class="step active" data-step="1"><b>1</b>Formations</button>
+        <button class="step" data-step="2"><b>2</b>Membres</button>
+        <button class="step" data-step="3"><b>3</b>Paiements</button>
+        <button class="step" data-step="4"><b>4</b>Offres</button>
+        <button class="step" data-step="5"><b>5</b>Accueil</button>
+        <button class="step" data-step="6"><b>6</b>Partenaires</button>
+        <button class="step" data-step="7"><b>7</b>Test d'accès</button>
+      </div>
+
+      <div class="adm" data-adm="1">
+        <div class="adm-head"><span class="n">1</span><div><h3>Formations</h3><div class="muted">Créez et gérez les formations. Leur prix est celui des offres.</div></div></div>
+        <div class="card">
+          <h3>Ajouter une formation</h3>
+          <label>Titre</label><input id="aTitle" placeholder="Ex : Formation Instagram">
+          <label>Niveau</label><select id="aLevel"><option>Débutant</option><option>Intermédiaire</option><option>Avancé</option></select>
+          <label>Lien de la miniature (facultatif)</label><input id="aThumb" placeholder="https://...">
+          <label>Modules (un par ligne : titre | durée)</label><textarea id="aMods" rows="4" placeholder="Introduction | 5 min"></textarea>
+          <label>Partenaire (facultatif)</label><select id="aPartner"></select>
+          <button class="btn block" id="addCourse" style="margin-top:12px">Publier la formation</button>
+        </div>
+        <div id="admCourses"></div>
+      </div>
+
+      <div class="adm hidden" data-adm="2">
+        <div class="adm-head"><span class="n">2</span><div><h3>Membres</h3><div class="muted">Bannissez ou réactivez un membre.</div></div></div>
+        <div id="admMembers"></div>
+      </div>
+
+      <div class="adm hidden" data-adm="3">
+        <div class="adm-head"><span class="n">3</span><div><h3>Moyens de paiement</h3><div class="muted">Choisissez les moyens proposés aux membres.</div></div></div>
+        <div class="card" id="payBox"></div>
+      </div>
+
+      <div class="adm hidden" data-adm="4">
+        <div class="adm-head"><span class="n">4</span><div><h3>Offres</h3><div class="muted">Ces prix s'affichent sur la page d'accueil et dans l'espace.</div></div></div>
+        <div class="card">
+          <h3>Ajouter une offre</h3>
+          <label>Nom de l'offre</label><input id="oName" placeholder="Ex : Accès annuel">
+          <label>Prix (FCFA)</label><input id="oPrice" type="number" value="65000">
+          <label>Période</label><select id="oPer"><option>Pour 1 an</option><option>Par mois</option><option>Unique</option></select>
+          <label>Avantages (un par ligne)</label><textarea id="oFeat" rows="3" placeholder="Formation complète&#10;Accès à la communauté"></textarea>
+          <button class="btn block" id="addOffer" style="margin-top:12px">Ajouter l'offre</button>
+        </div>
+        <div id="admOffers"></div>
+      </div>
+
+      <div class="adm hidden" data-adm="5">
+        <div class="adm-head"><span class="n">5</span><div><h3>Page d'accueil</h3><div class="muted">Le texte, la vidéo, le fondateur et la FAQ.</div></div></div>
+        <div class="card">
+          <label>Titre principal</label><input id="lIn">
+          <label>Texte d'accroche</label><textarea id="lTxt" rows="2"></textarea>
+          <label>Vidéo de présentation (lien)</label><input id="lVid" placeholder="https://...">
+          <label>Texte du fondateur</label><textarea id="lFounder" rows="3"></textarea>
+          <label>Questions fréquentes (une par ligne : Question ? | Réponse)</label><textarea id="lFaq" rows="5"></textarea>
+          <div class="row" style="margin-top:12px"><button class="btn ghost" id="saveHome" style="flex:1">Enregistrer</button><button class="btn" data-home style="flex:1">Voir la page</button></div>
+        </div>
+      </div>
+
+      <div class="adm hidden" data-adm="6">
+        <div class="adm-head"><span class="n">6</span><div><h3>Partenaires</h3><div class="muted">Invitez un partenaire et fixez sa rémunération.</div></div></div>
+        <div class="card">
+          <label>Nom du partenaire</label><input id="pIn" placeholder="Ex : Awa Coaching">
+          <label>Rémunération</label>
+          <select id="pModel">
+            <option value="pct">Pourcentage sur chaque vente</option>
+            <option value="fixe">Montant fixe par mois</option>
+            <option value="inscr">Pourcentage par inscription</option>
+          </select>
+          <label>Valeur (% ou FCFA selon le choix)</label><input id="pVal" type="number" value="30">
+          <button class="btn block" id="invite" style="margin-top:12px">Inviter le partenaire</button>
+        </div>
+        <div id="admPartners"></div>
+      </div>
+
+      <div class="adm hidden" data-adm="7">
+        <div class="adm-head"><span class="n">7</span><div><h3>Test d'accès</h3><div class="muted">Pour vérifier ce que voit un visiteur qui n'a pas payé.</div></div></div>
+        <div class="card">
+          <div class="switch"><div><strong>Mode visiteur (non abonné)</strong><div class="muted">Activé : modules verrouillés et messages bloqués.</div></div><input type="checkbox" id="visitorTest"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ESPACE PARTENAIRE -->
+    <section id="v-partner" class="view hidden">
+      <h2>Espace partenaire</h2>
+      <p class="muted" id="partnerInfo"></p>
+      <div class="card" style="margin-top:12px">
+        <h3>Publier votre formation</h3>
+        <label>Titre</label><input id="qTitle">
+        <label>Modules (un par ligne : titre | durée)</label><textarea id="qMods" rows="3"></textarea>
+        <button class="btn block" id="qAdd" style="margin-top:12px">Publier</button>
+      </div>
+      <div class="card"><h3>Mes gains estimés</h3><div id="earn" class="muted"></div></div>
+      <div id="pCourses"></div>
+    </section>
+  </main>
+
+  <nav class="tabbar">
+    <button data-go="flux"><span class="t">🏠</span>Accueil</button>
+    <button data-go="membres"><span class="t">👥</span>Membres</button>
+    <button data-go="messages"><span class="t">💬</span>Messages</button>
+    <button data-go="formations"><span class="t">🎓</span>Formations</button>
+    <button data-go="profil"><span class="t">👤</span>Profil</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= DONNÉES DE DÉMONSTRATION (à remplacer) ================= */
+const ME={name:"sam123",role:"admin",head:"",bio:"",link:"",photo:"",validated:false,sub:false};
+let COURSES=[
+ {id:1,title:"Formation TikTok",level:"Débutant",emoji:"🎵",thumb:"",partner:"",mods:[["Créer un compte qui retient","8 min"],["Filmer avec son téléphone","12 min"],["Publier et grandir","10 min"]]},
+ {id:2,title:"Formation SaaS",level:"Intermédiaire",emoji:"🚀",thumb:"",partner:"",mods:[["Comprendre le SaaS","9 min"],["Construire son offre","14 min"],["Vendre en ligne","11 min"]]},
+ {id:3,title:"Formation Montage Vidéo",level:"Débutant",emoji:"🎬",thumb:"",partner:"Awa Diallo",mods:[["Prise en main du logiciel","10 min"],["Couper et rythmer","13 min"],["Exporter pour les réseaux","7 min"]]}
+];
+let MEMBERS=[
+ {id:1,name:"Awa Diallo",role:"Partenaire",head:"Coach en leadership",bio:"J'accompagne les entrepreneurs dans leur croissance.",link:"",validated:true,banned:false,followers:124,following:58},
+ {id:2,name:"Marc Kouassi",role:"Membre",head:"Entrepreneur",bio:"Je construis des projets digitaux.",link:"",validated:true,banned:false,followers:42,following:30},
+ {id:3,name:"Lina Ben",role:"Membre",head:"Étudiante en marketing",bio:"",link:"",validated:false,banned:false,followers:8,following:12},
+ {id:4,name:"Yann Traoré",role:"Membre",head:"Freelance",bio:"",link:"",validated:false,banned:true,followers:3,following:5}
+];
+let PAYS={mobile:true,card:true,paypal:false};
+let OFFERS=[
+ {name:"Accès mensuel",price:19000,per:"Par mois",feat:["Accès aux formations","Accès à la communauté"]},
+ {name:"Accès annuel",price:65000,per:"Pour 1 an",feat:["Toutes les formations","Sessions live incluses","Mises à jour incluses","Accès à la communauté"],best:true}
+];
+let HOME={
+  title:"Lancez votre activité en ligne avec des <em>formations claires</em>",
+  text:"Formations en modules, sessions live et communauté : tout ce qu'il faut pour passer de l'idée à vos premiers résultats.",
+  video:"",
+  founder:"Je m'appelle [Votre nom]. J'accompagne des personnes dans la création de revenus en ligne depuis plusieurs années. Ce que je propose ici, c'est la méthode que j'utilise moi-même, expliquée étape par étape.",
+  faq:[
+   ["Je n'ai aucune compétence technique, est-ce que je peux suivre ?","Oui. Les formations sont pensées pour les débutants, avec des explications étape par étape."],
+   ["Comment accéder aux formations après inscription ?","Vous choisissez une offre, puis vous accédez à toutes les formations et à leurs modules."],
+   ["Puis-je suivre depuis mon téléphone ?","Oui, l'espace est pensé pour le mobile."],
+   ["Puis-je devenir partenaire ?","Oui, sur invitation de l'équipe. Vous publiez vos formations et percevez une rémunération."]
+  ]
+};
+let PARTNERS=[{name:"Awa Diallo",model:"pct",val:30,sales:12}];
+let POSTS=[{author:"Équipe Flash Academy",c:"Bienvenue à tous !",t:"Il y a 2 min"},{author:"Awa Diallo",c:"Nouvelle formation Montage Vidéo disponible !",t:"Hier"}];
+let STORIES=[{author:"Awa Diallo",c:"Ma première session live a réuni plus de 80 personnes. Merci !",t:"Il y a 3 jours"}];
+const TESTIMONIALS=[
+ {n:"Awa D.",r:"Membre, formation SaaS",q:"J'ai compris en une semaine ce que je cherchais depuis des mois. Les modules sont très clairs."},
+ {n:"Marc K.",r:"Entrepreneur",q:"Les sessions live sont concrètes. On repart avec une action à faire le jour même."},
+ {n:"Lina B.",r:"Étudiante",q:"Je fais mes premiers montages seule grâce à la formation. Simple et efficace."}
+];
+const CONVS=[
+ {with:"Awa Diallo",msgs:[{me:false,t:"Bonjour, bienvenue dans la communauté !"}]},
+ {with:"Marc Kouassi",msgs:[{me:false,t:"Salut, tu as regardé la formation SaaS ?"}]}
+];
+const LIVES=[{t:"Prendre la parole en public",d:"Dimanche 19h"},{t:"Q&R mensuel avec les coachs",d:"Jeudi 20h"}];
+const REPLAYS=[{t:"Organiser sa semaine"},{t:"Négocier son salaire"}];
+const done={};
+let curProfile=ME.name, curPTab="recits", curConv=null, curAdm=1;
+const DEADLINE=Date.now()+(11*3600+22*60)*1000;
+
+/* ================= UTILITAIRES ================= */
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const ini=n=>(n||"?").trim().charAt(0).toUpperCase();
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fcfa=n=>Number(n).toLocaleString("fr-FR").replace(/\u202f|\u00a0/g," ")+" FCFA";
+const minPrice=()=>Math.min(...OFFERS.map(o=>o.price));
+const bestOffer=()=>OFFERS.find(o=>o.best)||OFFERS[0];
+const canAccess=()=>ME.sub||ME.role==="admin"&&!$("#visitorTest").checked;
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2400);}
+function ping(){
+  try{const C=window.AudioContext||window.webkitAudioContext;const c=new C();const o=c.createOscillator();const g=c.createGain();
+    o.type="sine";o.frequency.setValueAtTime(988,c.currentTime);o.frequency.setValueAtTime(1319,c.currentTime+.09);
+    g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.25,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.3);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.32);}catch(e){}
+}
+function thumbHTML(c,cls=""){return `<div class="thumb ${cls}" style="${c.thumb?`background-image:url('${esc(c.thumb)}')`:""}"><span style="${c.thumb?"opacity:0":""}">${c.emoji}</span></div>`;}
+function getUser(name){return name===ME.name?ME:MEMBERS.find(m=>m.name===name);}
+function offerCard(o,label,action){
+  return `<div class="offer ${o.best?"best":""}">
+    ${o.best?'<span class="tag">Le plus choisi</span>':""}
+    <h3 style="margin-top:6px">${esc(o.name)}</h3>
+    <div class="price">${fcfa(o.price)} <small>${esc(o.per)}</small></div>
+    <ul>${(o.feat||[]).map(f=>`<li>${esc(f)}</li>`).join("")}</ul>
+    <button class="btn block" ${action}>${label}</button>
+  </div>`;
+}
+
+/* ================= NAVIGATION ================= */
+function showView(id){
+  $$("#app main > .view").forEach(s=>s.classList.add("hidden"));
+  const el=document.getElementById("v-"+id); if(!el) return;
+  el.classList.remove("hidden"); el.classList.remove("view"); void el.offsetWidth; el.classList.add("view");
+}
+function go(v,arg){
+  if(v==="admin"&&ME.role!=="admin") return toast("Accès réservé à l'administrateur");
+  if(v==="partner"&&ME.role!=="partner"&&ME.role!=="admin") return toast("Accès réservé aux partenaires");
+  closeMenu();
+  if((v==="replays"||v==="partenariats")&&!canAccess()){ toast("Réservé aux membres abonnés"); return go("offres"); }
+  if(v==="recettes") renderRecipes();
+  if(v==="profil"){ curProfile=arg||ME.name; curPTab="recits"; }
+  if(v==="cours"){ openCourse(arg); window.scrollTo({top:0,behavior:"smooth"}); return; }
+  showView(v);
+  $$(".tabbar button").forEach(b=>b.classList.toggle("active",b.dataset.go===v));
+  $$(".nav-item").forEach(b=>b.classList.toggle("active",b.dataset.go===v));
+  window.scrollTo({top:0,behavior:"smooth"});
+  if(v==="flux") renderFeed();
+  if(v==="membres") renderMembers();
+  if(v==="messages") renderConvs();
+  if(v==="formations") renderCourses();
+  if(v==="profil") renderProfile();
+  if(v==="offres") renderOffersSpace();
+  if(v==="admin") renderAdmin();
+  if(v==="partner") renderPartner();
+}
+function enter(){ $("#home").classList.add("hidden"); $("#app").classList.remove("hidden"); document.body.classList.add("app"); go("flux"); }
+function goHome(){ $("#app").classList.add("hidden"); $("#home").classList.remove("hidden"); document.body.classList.remove("app"); closeMenu(); renderHome(); window.scrollTo({top:0}); }
+function openMenu(){$("#drawer").classList.add("open");$("#overlay").classList.add("open");$("#burger").classList.add("open");}
+function closeMenu(){$("#drawer").classList.remove("open");$("#overlay").classList.remove("open");$("#burger").classList.remove("open");}
+$("#burger").onclick=()=>$("#drawer").classList.contains("open")?closeMenu():openMenu();
+$("#overlay").onclick=closeMenu;
+["#theme1","#theme2"].forEach(s=>$(s).onclick=()=>{const r=document.documentElement;r.dataset.theme=r.dataset.theme==="dark"?"light":"dark";});
+document.addEventListener("click",e=>{
+  if(e.target.closest("[data-enter]")) return enter();
+  if(e.target.closest("[data-home]")) return goHome();
+  if(e.target.closest("[data-edit]")){ go("profil",ME.name); openEdit(); return; }
+  const st=e.target.closest("[data-step]"); if(st) return showAdm(+st.dataset.step);
+  const c=e.target.closest("[data-course]"); if(c) return go("cours",+c.dataset.course);
+  const g=e.target.closest("[data-go]"); if(g) return go(g.dataset.go);
+  const b=e.target.closest("[data-back]"); if(b) return go(b.dataset.back);
+});
+function applyRoles(){
+  $$(".nav-item[data-role]").forEach(b=>{
+    const r=b.dataset.role; b.classList.toggle("hidden",!((r==="admin"&&ME.role==="admin")||(r==="partner"&&(ME.role==="partner"||ME.role==="admin"))));
+  });
+  $("#lockMsg").textContent=canAccess()?"":"🔒";
+  $$(".lk").forEach(s=>s.textContent=canAccess()?"":"🔒");
+  $("#bannerAccess").classList.toggle("hidden",canAccess());
+  $("#bannerProfile").classList.toggle("hidden",ME.validated);
+}
+function renderMenuCourses(){
+  $("#menuCourses").innerHTML=COURSES.map(c=>`<button class="nav-item" data-course="${c.id}"><span class="ico">${c.emoji}</span>${esc(c.title.replace(/^Formation /,""))}${canAccess()?"":'<span class="lock">🔒</span>'}</button>`).join("")
+    +`<button class="nav-item" data-go="formations"><span class="ico">📚</span>Toutes les formations</button>`;
+}
+
+/* ================= ACCUEIL PUBLIC ================= */
+function renderHome(){
+  $("#hTitle").innerHTML=HOME.title; $("#hText").textContent=HOME.text;
+  $("#hVideo").onclick=()=>toast(HOME.video?"Ouverture de la vidéo":"Ajoutez le lien de la vidéo dans le bureau administrateur");
+  $("#founderText").textContent=HOME.founder;
+  $("#proof").innerHTML=TESTIMONIALS.map(t=>`<div class="quote"><div class="who"><div class="av">${ini(t.n)}</div><div><strong>${esc(t.n)}</strong><div class="muted" style="font-size:12px">${esc(t.r)}</div></div></div><p class="muted" style="margin:0;color:var(--text)">« ${esc(t.q)} »</p></div>`).join("");
+  $("#offers").innerHTML=OFFERS.map(o=>offerCard(o,"Choisir "+esc(o.name),"data-enter")).join("");
+  $("#faq").innerHTML=HOME.faq.map(([q,a],i)=>`<details ${i===0?"open":""}><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("");
+}
+function tick(){
+  const left=Math.max(0,DEADLINE-Date.now());
+  const h=Math.floor(left/3600000), m=Math.floor(left%3600000/60000), s=Math.floor(left%60000/1000);
+  $("#cH").textContent=String(h).padStart(2,"0"); $("#cM").textContent=String(m).padStart(2,"0"); $("#cS").textContent=String(s).padStart(2,"0");
+}
+setInterval(tick,1000); tick();
+
+/* ================= ACTUALITÉS ================= */
+function renderFeed(){
+  applyRoles();
+  $("#feed").innerHTML=POSTS.map(p=>`<div class="card lift"><div class="row" style="margin-bottom:8px"><div class="avatar" data-user="${esc(p.author)}" style="width:34px;height:34px;font-size:14px">${ini(p.author)}</div><div><strong>${esc(p.author)}</strong><div class="muted" style="font-size:12px">${esc(p.t)}</div></div></div><p style="margin:0">${esc(p.c)}</p></div>`).join("");
+  $$("#feed [data-user]").forEach(el=>el.onclick=()=>go("profil",el.dataset.user));
+}
+$("#welcomeVid").onclick=()=>toast("Lecture : Vidéo très IMPORTANTE");
+$("#postBtn").onclick=()=>{ const v=$("#postIn").value.trim(); if(!v) return; POSTS.unshift({author:ME.name,c:v,t:"À l'instant"}); $("#postIn").value=""; renderFeed(); toast("Publication ajoutée"); };
+
+/* ================= MEMBRES ================= */
+function renderMembers(){
+  $("#members").innerHTML=MEMBERS.filter(m=>!m.banned).map(m=>`
+    <div class="card lift click row" data-user="${esc(m.name)}">
+      <div class="avatar" style="width:46px;height:46px">${ini(m.name)}</div>
+      <div class="grow"><strong>${esc(m.name)}</strong> ${m.role!=="Membre"?`<span class="tag">${esc(m.role)}</span>`:""}<div class="muted">${esc(m.head)}</div></div>
+      <span class="muted">›</span>
+    </div>`).join("");
+  $$("#members [data-user]").forEach(el=>el.onclick=()=>go("profil",el.dataset.user));
+}
+
+/* ================= PROFIL ================= */
+function renderProfile(){
+  const u=getUser(curProfile)||ME, isMe=u.name===ME.name;
+  $("#backProfile").classList.toggle("hidden",isMe);
+  const myDone=COURSES.filter(c=>c.mods.some((_,i)=>done[c.id+"-"+i])).length;
+  const photo=isMe?ME.photo:(u.photo||"");
+  $("#profileRoot").innerHTML=`
+  <div class="profile">
+    <div class="cover"></div>
+    <div class="pbody">
+      <div class="pavatar" style="${photo?`background-image:url('${esc(photo)}')`:""}">${photo?"":ini(u.name)}</div>
+      <div class="row" style="justify-content:flex-end;margin-top:-40px;position:relative">
+        ${isMe?`<button class="btn ghost sm" id="toggleEdit">✏️ Modifier le profil</button>`
+              :`<button class="btn sm ${canAccess()?"":"locked"}" id="sendMsg">${canAccess()?"Envoyer un message":"🔒 Message (abonnés)"}</button>`}
+      </div>
+      <div class="pname">${esc(u.name)} ${u.validated?'<span class="badge">✓</span>':""}</div>
+      <div class="muted">@${esc(u.name.toLowerCase().replace(/\s+/g,""))}${u.role!=="Membre"?" · "+esc(u.role):""}</div>
+      ${u.head?`<div class="muted" style="margin-top:2px">${esc(u.head)}</div>`:""}
+      <div style="margin:10px 0;line-height:1.5;white-space:pre-line;${u.bio?"":"color:var(--muted)"}">${esc(u.bio)||(isMe?"Ajoutez une biographie pour vous présenter.":"Pas encore de biographie.")}</div>
+      ${u.link?`<a href="${esc(u.link)}" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600;font-size:14px;text-decoration:none">🔗 ${esc(u.link.replace(/^https?:\/\//,""))}</a>`:""}
+      <div class="stats">
+        <div><b>${u.followers??0}</b><small>Abonnés</small></div>
+        <div><b>${u.following??0}</b><small>Abonnements</small></div>
+        <div><b>${isMe?myDone:COURSES.filter(c=>c.partner===u.name).length}</b><small>Formations</small></div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab" data-ptab="recits">Récits</button>
+      <button class="tab" data-ptab="pubs">Publications</button>
+      <button class="tab" data-ptab="formations">Formations</button>
+    </div>
+    ${isMe?`<div id="editBox" class="hidden" style="padding:16px 18px;border-bottom:1px solid var(--line)">
+      <h3>Modifier mon profil</h3>
+      <label>Photo de profil</label><input id="fPhoto" type="file" accept="image/*" style="padding:8px">
+      <label>Nom affiché</label><input id="fName" value="${esc(ME.name)}">
+      <label>Titre</label><input id="fHead" value="${esc(ME.head)}" placeholder="Votre activité en une phrase">
+      <label>Biographie</label><textarea id="fBio" rows="3">${esc(ME.bio)}</textarea>
+      <label>Lien</label><input id="fLink" value="${esc(ME.link)}" placeholder="https://">
+      <div class="row" style="margin-top:14px"><button class="btn ghost" id="cancelEdit" style="flex:1">Annuler</button><button class="btn" id="saveP" style="flex:1">Valider mon profil</button></div>
+    </div>`:""}
+    <div class="pbody" id="ptab" style="padding-top:14px"></div>
+  </div>`;
+  if(isMe){
+    $("#toggleEdit").onclick=()=>openEdit();
+    $("#cancelEdit").onclick=()=>$("#editBox").classList.add("hidden");
+    $("#fPhoto").onchange=e=>{const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ME.photo=r.result; renderProfile(); openEdit(true); toast("Photo ajoutée");}; r.readAsDataURL(f);};
+    $("#saveP").onclick=()=>{
+      ME.name=$("#fName").value.trim()||"sam123"; ME.head=$("#fHead").value.trim();
+      ME.bio=$("#fBio").value.trim(); ME.link=$("#fLink").value.trim(); ME.validated=true;
+      curProfile=ME.name; renderFeed(); $("#hAvatar").textContent=ini(ME.name); $("#hAvatar").style.backgroundImage=ME.photo?`url('${ME.photo}')`:"";
+      renderProfile(); toast("Profil validé ✓");
+    };
+  } else {
+    $("#sendMsg").onclick=()=>{
+      if(!canAccess()) return toast("Abonnez-vous pour envoyer des messages"), go("offres");
+      let c=CONVS.find(x=>x.with===u.name); if(!c){c={with:u.name,msgs:[]};CONVS.push(c);}
+      openConv(c);
+    };
+  }
+  $$("[data-ptab]").forEach(b=>b.onclick=()=>{curPTab=b.dataset.ptab;renderPTab(u,isMe);});
+  renderPTab(u,isMe);
+}
+function openEdit(keep){
+  const box=$("#editBox"); if(!box) return;
+  if(keep){box.classList.remove("hidden");return;}
+  box.classList.remove("hidden"); box.scrollIntoView({behavior:"smooth",block:"center"});
+}
+function renderPTab(u,isMe){
+  $$("[data-ptab]").forEach(b=>b.classList.toggle("active",b.dataset.ptab===curPTab));
+  const box=$("#ptab");
+  if(curPTab==="recits"){
+    const mine=STORIES.filter(s=>s.author===u.name);
+    box.innerHTML=(isMe?`<div class="card" style="margin-bottom:12px"><textarea id="stIn" rows="2" placeholder="Partagez un récit avec la communauté"></textarea><button class="btn block" id="stBtn" style="margin-top:8px">Publier le récit</button></div>`:"")
+      +(mine.map(s=>`<div class="card story"><p class="muted" style="margin:0 0 6px">${esc(s.t)}</p><p style="margin:0">${esc(s.c)}</p></div>`).join("")||'<div class="empty">Aucun récit pour le moment.</div>');
+    if(isMe) $("#stBtn").onclick=()=>{const v=$("#stIn").value.trim();if(!v)return;STORIES.unshift({author:ME.name,c:v,t:"À l'instant"});renderPTab(u,isMe);toast("Récit publié");};
+  }
+  if(curPTab==="pubs"){
+    const mine=POSTS.filter(p=>p.author===u.name);
+    box.innerHTML=mine.map(p=>`<div class="card"><p class="muted" style="margin:0 0 6px">${esc(p.t)}</p><p style="margin:0">${esc(p.c)}</p></div>`).join("")||'<div class="empty">Aucune publication.</div>';
+  }
+  if(curPTab==="formations"){
+    const list=isMe?COURSES.filter(c=>c.mods.some((_,i)=>done[c.id+"-"+i])):COURSES.filter(c=>c.partner===u.name);
+    box.innerHTML=list.map(c=>`<div class="card row click" data-course="${c.id}">${thumbHTML(c,"sm")}<div><h3>${esc(c.title)}</h3><p class="muted">${esc(c.level)}</p></div></div>`).join("")||'<div class="empty">Aucune formation.</div>';
+  }
+}
+
+/* ================= MESSAGES ================= */
+function renderConvs(){
+  $("#convView").classList.add("hidden"); $("#convList").classList.remove("hidden");
+  $("#convList").innerHTML=CONVS.length?CONVS.map((c,i)=>{const l=c.msgs[c.msgs.length-1];return `
+    <div class="chat-item" data-conv="${i}"><div class="avatar" style="width:48px;height:48px">${ini(c.with)}</div>
+    <div style="flex:1;min-width:0"><strong>${esc(c.with)}</strong><div class="muted" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l?esc(l.t):"Aucun message"}</div></div></div>`}).join(""):'<div class="empty">Aucune conversation</div>';
+  $$("#convList [data-conv]").forEach(el=>el.onclick=()=>openConv(CONVS[+el.dataset.conv]));
+}
+function openConv(c){
+  curConv=c; $("#chatWith").textContent=c.with; drawChat();
+  $("#convList").classList.add("hidden"); $("#convView").classList.remove("hidden");
+  showView("messages"); $$(".tabbar button").forEach(b=>b.classList.toggle("active",b.dataset.go==="messages"));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function drawChat(){
+  $("#chatBody").innerHTML=curConv.msgs.map(m=>`<div class="bubble ${m.me?"me":"them"}">${esc(m.t)}</div>`).join("")||'<div class="empty">Dites bonjour 👋</div>';
+  $("#composerBox").innerHTML=canAccess()
+    ?`<div class="composer"><input id="chatIn" placeholder="Votre message"><button class="btn" id="chatSend">Envoyer</button></div>`
+    :`<div class="card" style="margin-top:12px;text-align:center"><p class="muted" style="margin:0 0 10px">La messagerie est réservée aux membres abonnés.</p><button class="btn sm" data-go="offres">Voir les offres</button></div>`;
+  const s=$("#chatSend"); if(s){ s.onclick=sendChat; $("#chatIn").addEventListener("keydown",e=>{if(e.key==="Enter")sendChat();}); }
+}
+function sendChat(){
+  const v=$("#chatIn").value.trim(); if(!v||!curConv) return;
+  curConv.msgs.push({me:true,t:v}); $("#chatIn").value=""; drawChat(); ping();
+  setTimeout(()=>{curConv.msgs.push({me:false,t:"Merci pour votre message !"});drawChat();ping();},1000);
+}
+
+/* ================= FORMATIONS ================= */
+function renderCourses(){
+  $("#courses").innerHTML=COURSES.map(c=>`
+    <div class="card lift click" data-course="${c.id}">
+      ${thumbHTML(c)}
+      <div style="margin-top:10px"><span class="tag">${esc(c.level)}</span>${c.partner?`<span class="tag grey">${esc(c.partner)}</span>`:""}</div>
+      <h3 style="margin-top:8px">${esc(c.title)}</h3>
+      <p class="muted">${c.mods.length} modules · ${canAccess()?"Accès inclus":"À partir de "+fcfa(minPrice())}</p>
+    </div>`).join("");
+}
+function openCourse(id){
+  const c=COURSES.find(x=>x.id===id); if(!c) return;
+  const ok=canAccess();
+  const pct=Math.round(c.mods.filter((_,i)=>done[id+"-"+i]).length/c.mods.length*100);
+  $("#courseDetail").innerHTML=`
+    <div class="card">
+      <div class="thumb" style="${c.thumb?`background-image:url('${esc(c.thumb)}')`:""}" id="cPlay"><div class="play">▶</div></div>
+      <h2>${esc(c.title)}</h2>
+      <p class="muted">${esc(c.level)}${c.partner?" · par "+esc(c.partner):""}</p>
+      ${ok?`<div class="progress"><div style="width:${pct}%"></div></div><p class="muted">${pct} % suivi</p>`
+        :`<div class="card" style="margin:12px 0;background:var(--soft);border-color:transparent">
+            <strong>Accès visiteur</strong>
+            <p class="muted" style="margin:6px 0 10px">Vous pouvez regarder le premier module. Les suivants se débloquent avec une offre.</p>
+            <button class="btn block" data-go="offres">Débloquer la formation · dès ${fcfa(minPrice())}</button>
+          </div>`}
+      ${c.mods.map((m,i)=>{
+        const locked=!ok&&i>0;
+        return `<div class="mod ${done[id+"-"+i]?"done":""} ${locked?"locked":""}">
+          <span>${i+1}. ${esc(m[0])} <span class="muted">(${esc(m[1])})</span></span>
+          ${locked?`<button class="btn sm locked" data-go="offres">🔒 Verrouillé</button>`
+                  :`<button class="btn ghost sm" data-mod="${id}-${i}">${done[id+"-"+i]?"Revoir":"Marquer fait"}</button>`}
+        </div>`;}).join("")}
+    </div>`;
+  $("#cPlay").onclick=()=>toast("Lecture : "+c.title);
+  $$("[data-mod]").forEach(b=>b.onclick=()=>{done[b.dataset.mod]=!done[b.dataset.mod];openCourse(id);});
+  showView("cours");
+}
+
+/* ================= OFFRES (espace) ================= */
+function renderOffersSpace(){
+  $("#offerStatus").textContent=canAccess()?"Vous avez accès à toutes les formations.":"Choisissez une offre pour débloquer les formations, les modules et la messagerie.";
+  $("#offersSpace").innerHTML=OFFERS.map(o=>offerCard(o,canAccess()?"Offre active":"Choisir "+esc(o.name),canAccess()?"disabled":`onclick="subscribe('${esc(o.name)}')"`)).join("");
+}
+function subscribe(name){
+  ME.sub=true; applyRoles(); renderMenuCourses(); renderOffersSpace();
+  toast("Démo : offre « "+name+" » activée. Aucun paiement réel.");
+}
+
+/* ================= RECETTES ================= */
+let RECIPES=[
+ {id:1,author:"Awa Diallo",title:"Jus de bissap maison",time:"15 min",ing:"Fleurs de bissap, sucre, menthe, eau",steps:"Faire infuser les fleurs 10 min. Filtrer, sucrer, servir frais.",t:"Hier"},
+ {id:2,author:"Marc Kouassi",title:"Attiéké poisson braisé",time:"45 min",ing:"Attiéké, poisson, oignons, piment, citron",steps:"Griller le poisson. Servir sur l'attiéké avec oignons et piment.",t:"Il y a 2 jours"}
+];
+function renderRecipes(){
+  $("#recFormBox").innerHTML=canAccess()
+    ?`<div class="card"><h3>Publier une recette</h3><label>Titre</label><input id="rT"><label>Temps de préparation</label><input id="rTime" placeholder="Ex : 30 min"><label>Ingrédients (séparés par des virgules)</label><textarea id="rI" rows="2"></textarea><label>Étapes</label><textarea id="rS" rows="3"></textarea><button class="btn block" id="rBtn" style="margin-top:12px">Publier la recette</button></div>`
+    :`<div class="card" style="text-align:center"><p class="muted" style="margin:0 0 10px">Pour publier une recette, abonnez-vous à une offre.</p><button class="btn sm" data-go="offres">Voir les offres</button></div>`;
+  const b=$("#rBtn");
+  if(b) b.onclick=()=>{
+    const t=$("#rT").value.trim(); if(!t) return toast("Ajoutez un titre");
+    RECIPES.unshift({id:Date.now(),author:ME.name,title:t,time:$("#rTime").value.trim()||"—",ing:$("#rI").value.trim(),steps:$("#rS").value.trim(),t:"À l'instant"});
+    renderRecipes(); toast("Recette publiée");
+  };
+  $("#recList").innerHTML=RECIPES.map(r=>`<div class="card">
+      <div class="row" style="margin-bottom:8px"><div class="avatar" data-user="${esc(r.author)}" style="width:34px;height:34px;font-size:14px;cursor:pointer">${ini(r.author)}</div><div class="grow"><strong>${esc(r.author)}</strong><div class="muted" style="font-size:12px">${esc(r.t)} · ${esc(r.time)}</div></div></div>
+      <h3>${esc(r.title)}</h3>
+      <p class="muted" style="margin:6px 0"><b>Ingrédients :</b> ${esc(r.ing)}</p>
+      <details><summary style="cursor:pointer;color:var(--accent);font-weight:600">Voir la préparation</summary><p style="margin:8px 0 0">${esc(r.steps)}</p></details>
+    </div>`).join("");
+  $$("#recList [data-user]").forEach(el=>el.onclick=()=>go("profil",el.dataset.user));
+}
+
+/* ================= LIVE / REPLAYS ================= */
+$("#lives").innerHTML=LIVES.map(l=>`<div class="card lift"><span class="tag red">LIVE</span><h3 style="margin-top:6px">${esc(l.t)}</h3><p class="muted">${esc(l.d)}</p><button class="btn sm" data-go="offres">Rejoindre</button></div>`).join("");
+$("#replays").innerHTML=REPLAYS.map(r=>`<div class="card lift"><h3>${esc(r.t)}</h3><div class="thumb" onclick="toast('Lecture : ${esc(r.t)}')"><div class="play">▶</div></div></div>`).join("");
+
+/* ================= BUREAU ADMIN (étapes) ================= */
+function showAdm(n){
+  curAdm=n;
+  $$("#steps .step").forEach(b=>b.classList.toggle("active",+b.dataset.step===n));
+  $$("[data-adm]").forEach(s=>s.classList.toggle("hidden",+s.dataset.adm!==n));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function renderAdmin(){
+  $("#aPartner").innerHTML=`<option value="">Aucun (Flash Academy)</option>`+PARTNERS.map(p=>`<option>${esc(p.name)}</option>`).join("");
+  $("#admCourses").innerHTML=COURSES.map(c=>`<div class="card row">${thumbHTML(c,"sm")}<div class="grow"><strong>${esc(c.title)}</strong><div class="muted">${c.mods.length} modules · ${esc(c.level)}</div></div><button class="btn danger sm" data-delc="${c.id}">Supprimer</button></div>`).join("");
+  $$("[data-delc]").forEach(b=>b.onclick=()=>{COURSES=COURSES.filter(c=>c.id!=b.dataset.delc);renderMenuCourses();renderAdmin();toast("Formation supprimée");});
+  $("#admMembers").innerHTML=MEMBERS.map(m=>`<div class="card row"><div class="avatar" style="width:40px;height:40px">${ini(m.name)}</div><div class="grow"><strong>${esc(m.name)}</strong> <span class="tag ${m.banned?"red":""}">${m.banned?"Banni":esc(m.role)}</span></div><button class="btn ${m.banned?"ghost":"danger"} sm" data-ban="${m.id}">${m.banned?"Débannir":"Bannir"}</button></div>`).join("");
+  $$("[data-ban]").forEach(b=>b.onclick=()=>{const m=MEMBERS.find(x=>x.id==b.dataset.ban);m.banned=!m.banned;renderAdmin();toast(m.banned?"Membre banni":"Membre réactivé");});
+  $("#payBox").innerHTML=[["mobile","Mobile Money"],["card","Carte bancaire"],["paypal","PayPal"]].map(([k,l])=>`<label class="switch" style="color:var(--text);font-weight:500;font-size:15px;margin-top:8px"><span>${l}</span><input type="checkbox" data-pay="${k}" ${PAYS[k]?"checked":""}></label>`).join("")+`<p class="muted" style="margin-top:12px">Les paiements réels se branchent à l'étape suivante avec un prestataire.</p>`;
+  $$("[data-pay]").forEach(c=>c.onchange=()=>{PAYS[c.dataset.pay]=c.checked;toast("Moyens de paiement mis à jour");});
+  $("#admOffers").innerHTML=OFFERS.map((o,i)=>`<div class="card row"><div class="grow"><strong>${esc(o.name)}</strong><div class="muted">${fcfa(o.price)} · ${esc(o.per)}</div></div><button class="btn danger sm" data-delo="${i}">Retirer</button></div>`).join("");
+  $$("[data-delo]").forEach(b=>b.onclick=()=>{OFFERS.splice(b.dataset.delo,1);renderAdmin();renderHome();});
+  $("#lIn").value=HOME.title.replace(/<[^>]+>/g,""); $("#lTxt").value=HOME.text; $("#lVid").value=HOME.video; $("#lFounder").value=HOME.founder;
+  $("#lFaq").value=HOME.faq.map(([q,a])=>q+" | "+a).join("\n");
+  $("#admPartners").innerHTML=PARTNERS.map(p=>`<div class="card"><strong>${esc(p.name)}</strong><div class="muted">${p.model==="pct"?p.val+" % sur chaque vente":p.model==="fixe"?fcfa(p.val)+" par mois":p.val+" % par inscription"}</div></div>`).join("");
+  $("#visitorTest").checked=!ME.sub;
+  showAdm(curAdm);
+}
+function parseLines(txt){return txt.split("\n").map(l=>l.trim()).filter(Boolean);}
+$("#visitorTest").onchange=e=>{ ME.sub=!e.target.checked; applyRoles(); renderMenuCourses(); toast(e.target.checked?"Mode visiteur activé":"Mode abonné activé"); };
+$("#addCourse").onclick=()=>{
+  const title=$("#aTitle").value.trim(); if(!title) return toast("Ajoutez un titre");
+  const mods=parseLines($("#aMods").value).map(l=>{const [t,d]=l.split("|");return [t.trim(),(d||"").trim()||"—"];});
+  COURSES.push({id:Date.now(),title,level:$("#aLevel").value,emoji:"🎓",thumb:$("#aThumb").value.trim(),partner:$("#aPartner").value,mods:mods.length?mods:[["Module 1","—"]]});
+  ["#aTitle","#aMods","#aThumb"].forEach(s=>$(s).value=""); renderMenuCourses(); renderAdmin(); toast("Formation publiée");
+};
+$("#addOffer").onclick=()=>{
+  const n=$("#oName").value.trim(); if(!n) return toast("Donnez un nom à l'offre");
+  OFFERS.push({name:n,price:+$("#oPrice").value||0,per:$("#oPer").value,feat:parseLines($("#oFeat").value)});
+  $("#oName").value=""; $("#oFeat").value=""; renderAdmin(); renderHome(); toast("Offre ajoutée");
+};
+$("#saveHome").onclick=()=>{
+  const faq=parseLines($("#lFaq").value).map(l=>{const i=l.indexOf("|");return i<0?[l,""]:[l.slice(0,i).trim(),l.slice(i+1).trim()];});
+  HOME={...HOME,title:$("#lIn").value,text:$("#lTxt").value,video:$("#lVid").value.trim(),founder:$("#lFounder").value,faq};
+  renderHome(); toast("Page d'accueil enregistrée");
+};
+$("#invite").onclick=()=>{
+  const n=$("#pIn").value.trim(); if(!n) return toast("Indiquez le nom du partenaire");
+  PARTNERS.push({name:n,model:$("#pModel").value,val:+$("#pVal").value||0,sales:0});
+  MEMBERS.push({id:Date.now(),name:n,role:"Partenaire",head:"Partenaire",bio:"",link:"",validated:false,banned:false,followers:0,following:0});
+  $("#pIn").value=""; renderAdmin(); toast("Invitation envoyée à "+n);
+};
+
+/* ================= ESPACE PARTENAIRE ================= */
+function renderPartner(){
+  const p=PARTNERS[0];
+  $("#partnerInfo").textContent=p?`Partenaire : ${p.name}`:"";
+  const mine=COURSES.filter(c=>c.partner===(p?p.name:""));
+  $("#pCourses").innerHTML=mine.map(c=>`<div class="card row">${thumbHTML(c,"sm")}<div><strong>${esc(c.title)}</strong><div class="muted">${c.mods.length} modules</div></div></div>`).join("")||'<div class="empty">Aucune formation publiée.</div>';
+  if(!p) return;
+  const base=bestOffer().price;
+  const est=p.model==="pct"?Math.round(p.sales*base*p.val/100):p.model==="fixe"?p.val:Math.round(p.sales*p.val/100*base);
+  $("#earn").innerHTML=`Modèle : ${p.model==="pct"?p.val+" % sur chaque vente":p.model==="fixe"?fcfa(p.val)+" par mois":p.val+" % par inscription"}<br><b style="color:var(--text);font-size:20px">≈ ${fcfa(est)}</b> (exemple)`;
+}
+$("#qAdd").onclick=()=>{
+  const t=$("#qTitle").value.trim(); if(!t) return toast("Ajoutez un titre");
+  const mods=parseLines($("#qMods").value).map(l=>{const [a,d]=l.split("|");return [a.trim(),(d||"").trim()||"—"];});
+  COURSES.push({id:Date.now(),title:t,level:"Débutant",emoji:"🎓",thumb:"",partner:PARTNERS[0]?PARTNERS[0].name:"",mods:mods.length?mods:[["Module 1","—"]]});
+  $("#qTitle").value=""; $("#qMods").value=""; renderMenuCourses(); renderPartner(); toast("Formation publiée");
+};
+
+/* ================= DÉMARRAGE ================= */
+applyRoles(); renderMenuCourses(); renderHome(); $("#hAvatar").textContent=ini(ME.name);
+</script>
+</body>
+                                      </html>
