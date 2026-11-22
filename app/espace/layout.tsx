@@ -1,10 +1,10 @@
-import Link from 'next/link';
 import { session } from '@/lib/session';
-import { initiale } from '@/lib/access';
+import { peutAcceder, estAdmin, estPartenaire } from '@/lib/access';
+import Menu from '@/components/Menu';
 import BottomNav from '@/components/BottomNav';
 
 export default async function LayoutEspace({ children }: { children: React.ReactNode }) {
-  const { profil } = await session();
+  const { supabase, profil } = await session();
 
   if (profil?.banned) {
     return (
@@ -17,16 +17,18 @@ export default async function LayoutEspace({ children }: { children: React.React
     );
   }
 
+  const { data: cours } = await supabase.from('courses').select('id,title,emoji').order('id');
+
   return (
     <>
-      <div className="bar">
-        <Link href="/espace" className="logo">Flash<span>Academy</span></Link>
-        <Link href="/espace/profil">
-          <div className="avatar" style={profil?.photo ? { backgroundImage: `url('${profil.photo}')` } : {}}>
-            {profil?.photo ? '' : initiale(profil?.name)}
-          </div>
-        </Link>
-      </div>
+      <Menu
+        courses={(cours || []) as any[]}
+        acces={peutAcceder(profil)}
+        admin={estAdmin(profil)}
+        partenaire={estPartenaire(profil)}
+        nom={profil?.name || ''}
+        photo={profil?.photo || ''}
+      />
       <main>{children}</main>
       <BottomNav />
     </>
