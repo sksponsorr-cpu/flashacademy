@@ -24,30 +24,42 @@ export default async function ProfilMembre({ params }: { params: { id: string } 
   return (
     <>
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ height: 120, background: 'linear-gradient(120deg,#1e3a8a,#2563eb 45%,#8b5cf6 80%,#ef4444)' }} />
-        <div style={{ padding: '0 18px 16px' }}>
+        <div className="cover" />
+        <div style={{ padding: '0 20px 18px' }}>
           <div
             className="avatar"
             style={{
-              width: 96, height: 96, fontSize: 36, marginTop: -48, border: '5px solid var(--card)',
+              width: 100, height: 100, fontSize: 38, marginTop: -50, border: '5px solid var(--card)',
+              boxShadow: '0 8px 24px rgba(0,0,0,.25)',
               ...(p.photo ? { backgroundImage: `url('${p.photo}')` } : {}),
             }}
           >
             {p.photo ? '' : initiale(p.name)}
           </div>
-          <div className="row" style={{ justifyContent: 'flex-end', marginTop: -36 }}>
+
+          <div className="row" style={{ justifyContent: 'flex-end', marginTop: -40, position: 'relative' }}>
             {!isMe && (acces ? (
               <Link className="btn sm" href={`/espace/messages?avec=${p.id}`}>Envoyer un message</Link>
             ) : (
               <Link className="btn sm off" href="/espace/offres">🔒 Message (abonnés)</Link>
             ))}
           </div>
-          <h2 style={{ margin: '10px 0 0' }}>{p.name} {p.validated && <span className="tag">✓</span>}</h2>
+
+          <h2 style={{ margin: '12px 0 2px' }}>
+            {p.name} {p.validated && <span className="tag">✓</span>}
+          </h2>
           <div className="muted">@{p.name.toLowerCase().replace(/\s+/g, '')}{p.role !== 'membre' ? ' · ' + p.role : ''}</div>
           {p.head && <div className="muted" style={{ marginTop: 2 }}>{p.head}</div>}
-          <p style={{ whiteSpace: 'pre-line', margin: '10px 0' }}>{p.bio || (isMe ? 'Ajoutez une biographie pour vous présenter.' : 'Pas encore de biographie.')}</p>
-          {p.link && <a href={p.link} target="_blank" rel="noopener" style={{ color: 'var(--accent)', fontWeight: 600 }}>🔗 {p.link.replace(/^https?:\/\//, '')}</a>}
-          <div className="row" style={{ gap: 22, marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--line)' }}>
+          <p style={{ whiteSpace: 'pre-line', margin: '12px 0' }}>
+            {p.bio || (isMe ? 'Ajoutez une biographie pour vous présenter.' : 'Pas encore de biographie.')}
+          </p>
+          {p.link && (
+            <a href={p.link} target="_blank" rel="noopener" style={{ color: 'var(--accent)', fontWeight: 600 }}>
+              🔗 {p.link.replace(/^https?:\/\//, '')}
+            </a>
+          )}
+
+          <div className="row" style={{ gap: 26, marginTop: 16, paddingTop: 14, borderTop: '1px solid var(--line)' }}>
             <div><b>{count ?? 0}</b> <span className="muted">formations</span></div>
             <div><b>{(recettes || []).length}</b> <span className="muted">recettes</span></div>
           </div>
@@ -68,7 +80,7 @@ export default async function ProfilMembre({ params }: { params: { id: string } 
             <textarea name="bio" rows={3} defaultValue={p.bio} />
             <label>Lien</label>
             <input name="link" defaultValue={p.link} placeholder="https://" />
-            <button className="btn block" style={{ marginTop: 14 }} type="submit">Valider mon profil</button>
+            <button className="btn block" style={{ marginTop: 16 }} type="submit">Valider mon profil</button>
           </form>
         </details>
       )}
@@ -78,7 +90,7 @@ export default async function ProfilMembre({ params }: { params: { id: string } 
           <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--accent)' }}>+ Publier un récit</summary>
           <form action={publierRecit}>
             <textarea name="contenu" rows={2} placeholder="Partagez un récit avec la communauté" required />
-            <button className="btn block" style={{ marginTop: 8 }} type="submit">Publier le récit</button>
+            <button className="btn block" style={{ marginTop: 10 }} type="submit">Publier le récit</button>
           </form>
         </details>
       )}
@@ -88,7 +100,7 @@ export default async function ProfilMembre({ params }: { params: { id: string } 
       {(recits || []).map((r: any) => (
         <div key={r.id} className="card" style={{ borderLeft: '3px solid var(--accent)' }}>
           <div className="muted" style={{ fontSize: 12 }}>{new Date(r.created_at).toLocaleString('fr-FR')}</div>
-          <p style={{ margin: '6px 0 0' }}>{r.content}</p>
+          <p style={{ margin: '8px 0 0' }}>{r.content}</p>
         </div>
       ))}
 
