@@ -11,7 +11,7 @@ export async function seConnecter(formData: FormData) {
   const email = txt(formData, 'email');
   const { error } = await supabase.auth.signInWithPassword({ email, password: txt(formData, 'motdepasse') });
   if (error) {
-    if (/confirm/i.test(error.message)) redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
+    if (/confirm/i.test(error.message)) redirect('/connexion?info=confirme');
     redirect('/connexion?erreur=identifiants');
   }
   redirect('/espace');
@@ -22,13 +22,15 @@ export async function creerCompte(formData: FormData) {
   const email = txt(formData, 'email');
   const password = txt(formData, 'motdepasse');
   if (password.length < 8) redirect('/connexion?onglet=inscription&erreur=motdepasse');
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: { data: { name: txt(formData, 'nom') || 'Membre' } },
   });
   if (error) redirect('/connexion?onglet=inscription&erreur=inscription');
-  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
+  // Si la confirmation par email est désactivée dans Supabase, l'utilisateur est déjà connecté.
+  if (data?.session) redirect('/espace');
+  redirect('/connexion?info=confirme');
 }
 
 export async function verifierCode(formData: FormData) {
@@ -59,6 +61,7 @@ export async function nouveauMotDePasse(formData: FormData) {
   const supabase = createClient();
   const password = txt(formData, 'motdepasse');
   if (password.length < 8) redirect('/connexion/nouveau-mot-de-passe?erreur=court');
+  if (password !== txt(formData, 'confirmation')) redirect('/connexion/nouveau-mot-de-passe?erreur=different');
   const { error } = await supabase.auth.updateUser({ password });
   if (error) redirect('/connexion/nouveau-mot-de-passe?erreur=echec');
   redirect('/espace');
