@@ -12,7 +12,7 @@ export default async function Cours({ params }: { params: { id: string } }) {
 
   const { data: c } = await supabase
     .from('courses')
-    .select('id,title,level,emoji,thumb,partner_id,modules(id,position,title,duration)')
+    .select('id,title,level,emoji,thumb,partner_id,niche_id,niches(id,nom,categories(slug)),modules(id,position,title,duration)')
     .eq('id', params.id)
     .maybeSingle();
   if (!c) notFound();
@@ -26,7 +26,10 @@ export default async function Cours({ params }: { params: { id: string } }) {
 
   return (
     <>
-      <Link className="btn ghost sm" href="/espace/formations">← Formations</Link>
+      <nav className="crumbs">
+        <Link href="/espace/formations">Formations</Link>
+        {(c as any).niches && <> <span>/</span> <Link href={`/espace/formations/niche/${(c as any).niches.id}`}>{(c as any).niches.nom}</Link></>}
+      </nav>
       <div className="card" style={{ marginTop: 12 }}>
         <div
           style={{
