@@ -1,46 +1,65 @@
-import Link from 'next/link';
-import { seConnecter, creerCompte } from './actions';
+'use server';
 
-export default function Connexion({ searchParams }: { searchParams: { erreur?: string; info?: string } }) {
-  return (
-    <>
-      <div className="bar">
-        <Link href="/" className="logo">Flash<span>Academy</span></Link>
-      </div>
+import { redirect } from 'next/navigation';
+import { createClient } from '@/lib/supabase/server';
 
-      <main style={{ paddingTop: 32 }}>
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <span className="pill">Espace membre</span>
-          <h1 style={{ marginTop: 14 }}>Bienvenue</h1>
-          <p className="muted">Connectez-vous pour accéder à vos formations, à la communauté et à Agence Ami.</p>
-        </div>
+const txt = (f: FormData, k: string) => String(f.get(k) ?? '').trim();
+const siteUrl = () => process.env.NEXT_PUBLIC_SITE_URL || '';
 
-        {searchParams.erreur && <div className="msg erreur">{searchParams.erreur}</div>}
-        {searchParams.info && <div className="msg">{searchParams.info}</div>}
+export async function seConnecter(formData: FormData) {
+  const supabase = createClient();
+  const email = txt(formData, 'email');
+  const { error } = await supabase.auth.signInWithPassword({ email, password: txt(formData, 'motdepasse') });
+  if (error) {
+    if (/confirm/i.test(error.message)) redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
+    redirect('/connexion?erreur=identifiants');
+  }
+  redirect('/espace');
+}
 
-        <div className="card" style={{ padding: 22 }}>
-          <h3>Se connecter</h3>
-          <p className="muted" style={{ marginTop: 0 }}>Vous avez déjà un compte.</p>
-          <form action={seConnecter}>
-            <label>Adresse email</label>
-            <input name="email" type="email" required autoComplete="email" placeholder="vous@exemple.com" />
-            <label>Mot de passe</label>
-            <input name="motdepasse" type="password" required autoComplete="current-password" />
-            <button className="btn block" style={{ marginTop: 20, padding: 14 }} type="submit">Se connecter</button>
-          </form>
-        </div>
+export async function creerCompte(formData: FormData) {
+  const supabase = createClient();
+  const email = txt(formData, 'email');
+  const password = txt(formData, 'motdepasse');
+  if (password.length < 8) redirect('/connexion?onglet=inscription&erreur=motdepasse');
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { name: txt(formData, 'nom') || 'Membre' } },
+  });
+  if (error) redirect('/connexion?onglet=inscription&erreur=inscription');
+  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}`);
+}
 
-        <details className="card" style={{ padding: 22 }}>
-          <summary style={{ cursor: 'pointer', fontWeight: 700, color: 'var(--accent)' }}>Pas encore de compte ? Créer mon compte</summary>
-          <form action={creerCompte} style={{ marginTop: 16 }}>
-            <label>Adresse email</label>
-            <input name="email" type="email" required autoComplete="email" placeholder="vous@exemple.com" />
-            <label>Mot de passe (6 caractères minimum)</label>
-            <input name="motdepasse" type="password" required minLength={6} autoComplete="new-password" />
-            <button className="btn block ghost" style={{ marginTop: 20, padding: 14 }} type="submit">Créer mon compte</button>
-          </form>
-        </details>
-      </main>
-    </>
-  );
+export async function verifierCode(formData: FormData) {
+  const supabase = createClient();
+  const email = txt(formData, 'email');
+  const token = txt(formData, 'code').replace(/\s/g, '');
+  const { error } = await supabase.auth.verifyOtp({ email, token, type: 'signup' });
+  if (error) redirect(`/connexion/verifier?email=${encodeURIComponent(email)}&erreur=code`);
+  redirect('/espace');
+}
+
+export async function renvoyerCode(formData: FormData) {
+  const supabase = createClient();
+  const email = txt(formData, 'email');
+  await supabase.auth.resend({ type: 'signup', email });
+  redirect(`/connexion/verifier?email=${encodeURIComponent(email)}&info=renvoye`);
+}
+
+export async function demanderReinitialisation(formData: FormData) {
+  const supabase = createClient();
+  await supabase.auth.resetPasswordForEmail(txt(formData, 'email'), {
+    redirectTo: `${siteUrl()}/auth/callback?next=/connexion/nouveau-mot-de-passe`,
+  });
+  redirect('/connexion/mot-de-passe-oublie?envoye=1');
+}
+
+export async function nouveauMotDePasse(formData: FormData) {
+  const supabase = createClient();
+  const password = txt(formData, 'motdepasse');
+  if (password.length < 8) redirect('/connexion/nouveau-mot-de-passe?erreur=court');
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) redirect('/connexion/nouveau-mot-de-passe?erreur=echec');
+  redirect('/espace');
 }
