@@ -9,18 +9,6 @@ import { estAdmin, estPartenaire, lignes } from '@/lib/access';
 const txt = (f: FormData, k: string) => String(f.get(k) ?? '').trim();
 const aAcces = (p: any) => !!p && (p.sub || p.role === 'admin');
 
-// ---------- Connexion ----------
-export async function connexion(formData: FormData) {
-  const email = txt(formData, 'email');
-  const supabase = createClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback` },
-  });
-  if (error) redirect('/connexion?erreur=1');
-  redirect('/connexion?envoye=1');
-}
-
 // ---------- Actualités, récits, profil ----------
 export async function publierPublication(formData: FormData) {
   const { supabase, user } = await session();
@@ -133,6 +121,7 @@ async function enregistrerFormation(formData: FormData, partenaireId: string | n
       level: txt(formData, 'niveau') || 'Débutant',
       thumb: txt(formData, 'miniature'),
       partner_id: partenaireId,
+      niche_id: Number(txt(formData, 'niche')) || null,
     })
     .select('id')
     .single();
@@ -212,5 +201,65 @@ export async function sauverAccueil(formData: FormData) {
   };
   await supabase.from('settings').upsert({ key: 'accueil', value });
   revalidatePath('/');
+  revalidatePath('/espace/admin');
+}
+
+// ---------- Catalogue : catégories et niches ----------
+const slugifier = (t: string) =>
+  t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+export async function ajouterCategorie(formData: FormData) {
+  const { supabase } = await admin();
+  const nom = txt(formData, 'nom');
+  if (!nom) return;
+  await supabase.from('categories').insert({
+    nom,
+    slug: slugifier(nom),
+    emoji: txt(formData, 'emoji') || '📘',
+    description: txt(formData, 'description'),
+    ordre: Number(txt(formData, 'ordre')) || 0,
+  });
+  revalidatePath('/espace', 'layout');
+  revalidatePath('/espace/admin');
+}
+
+export async function supprimerCategorie(formData: FormData) {
+  const { supabase } = await admin();
+  await supabase.from('categories').delete().eq('id', txt(formData, 'id'));
+  revalidatePath('/espace', 'layout');
+  revalidatePath('/espace/admin');
+}
+
+export async function ajouterNiche(formData: FormData) {
+  const { supabase } = await admin();
+  const nom = txt(formData, 'nom');
+  const categorie = Number(txt(formData, 'categorie'));
+  if (!nom || !categorie) return;
+  await supabase.from('niches').insert({
+    categorie_id: categorie,
+    nom,
+    description: txt(formData, 'description'),
+    ordre: Number(txt(formData, 'ordre')) || 0,
+  });
+  revalidatePath('/espace/formations');
+  revalidatePath('/espace/admin');
+}
+
+export async function supprimerNiche(formData: FormData) {
+  const { supabase } = await admin();
+  await supabase.from('niches').delete().eq('id', txt(formData, 'id'));
+  revalidatePath('/espace/formations');
+  revalidatePath('/espace/admin');
+}
+
+// ---------- Vidéo à la une (fil d'actualités) ----------
+export async function sauverVideoUne(formData: FormData) {
+  const { supabase } = await admin();
+  const titre = txt(formData, 'titre');
+  await supabase.from('settings').upsert({
+    key: 'video_une',
+    value: { titre, image: txt(formData, 'image'), url: txt(formData, 'url') },
+  });
+  revalidatePath('/espace', 'layout');
   revalidatePath('/espace/admin');
 }
