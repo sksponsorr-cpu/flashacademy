@@ -5,19 +5,6 @@ import { publierPublication } from './actions';
 
 export const dynamic = 'force-dynamic';
 
-const raccourcis = [
-  ['/espace/ami', '🤖 Agence Ami'],
-  ['/espace/ami/admin', '🧠 Consignes Ami'],
-  ['/espace/recettes', '🍲 Recettes'],
-  ['/espace/offres', '✨ Offres'],
-  ['/espace/ressources/replays', '🎬 Replays'],
-  ['/espace/ressources/partenariats', '🤝 Partenariats'],
-  ['/espace/ressources/live', '🔴 Live'],
-  ['/espace/ressources/evenements', '📅 Événements'],
-  ['/espace/partenaire', '💼 Partenaire'],
-  ['/espace/admin', '🛠️ Admin'],
-];
-
 export default async function Flux() {
   const { supabase, profil } = await session();
   const acces = peutAcceder(profil);
@@ -27,13 +14,19 @@ export default async function Flux() {
     .order('created_at', { ascending: false })
     .limit(50);
 
+  const { data: vr } = await supabase.from('settings').select('value').eq('key', 'video_une').maybeSingle();
+  const video: any = vr?.value || null;
+
   return (
     <>
-      <div className="steps">
-        {raccourcis.map(([href, label]) => (
-          <Link key={href} href={href}>{label}</Link>
-        ))}
-      </div>
+      {video?.titre && (
+        <a href={video.url || '#'} target="_blank" rel="noopener" className="card video-une rv">
+          <div className="thumb" style={video.image ? { backgroundImage: `url('${video.image}')` } : { background: 'linear-gradient(135deg,#1e3a8a,#8b5cf6)' }}>
+            <span className="play">▶</span>
+          </div>
+          <h2>{video.titre}</h2>
+        </a>
+      )}
 
       {!profil?.validated && (
         <div className="card row">
