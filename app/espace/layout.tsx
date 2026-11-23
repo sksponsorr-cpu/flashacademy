@@ -11,18 +11,18 @@ export default async function LayoutEspace({ children }: { children: React.React
       <main>
         <div className="card">
           <h2>Accès suspendu</h2>
-          <p className="muted">Votre accès à Flash Academy est suspendu. Contactez l'équipe.</p>
+          <p className="muted">Votre accès à Flash Academy est suspendu. Contactez l’équipe.</p>
         </div>
       </main>
     );
   }
 
-  const { data: cours } = await supabase.from('courses').select('id,title,emoji').order('id');
+  const { data: categories } = await supabase.from('categories').select('slug,nom,emoji').order('ordre');
 
   return (
     <>
       <Menu
-        courses={(cours || []) as any[]}
+        categories={(categories || []) as any[]}
         acces={peutAcceder(profil)}
         admin={estAdmin(profil)}
         partenaire={estPartenaire(profil)}
