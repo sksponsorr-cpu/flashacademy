@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import ThemeToggle from '@/components/ThemeToggle';
 import { initiale } from '@/lib/access';
 
-type Cours = { id: number; title: string; emoji: string };
-type Props = { courses: Cours[]; acces: boolean; admin: boolean; partenaire: boolean; nom: string; photo: string };
+type Categorie = { slug: string; nom: string; emoji: string };
+type Props = { categories: Categorie[]; acces: boolean; admin: boolean; partenaire: boolean; nom: string; photo: string };
 
-export default function Menu({ courses, acces, admin, partenaire, nom, photo }: Props) {
+export default function Menu({ categories, acces, admin, partenaire, nom, photo }: Props) {
   const [ouvert, setOuvert] = useState(false);
   const fermer = () => setOuvert(false);
 
@@ -29,7 +30,8 @@ export default function Menu({ courses, acces, admin, partenaire, nom, photo }: 
         <Link href="/espace/profil">
           <div className="avatar" style={photo ? { backgroundImage: `url('${photo}')` } : {}}>
             {photo ? '' : initiale(nom)}
-          </div>
+            <ThemeToggle />
+        </div>
         </Link>
       </div>
 
@@ -41,8 +43,8 @@ export default function Menu({ courses, acces, admin, partenaire, nom, photo }: 
         {lien('/espace/ressources/live', '🔴', 'Sessions live', true)}
 
         <h4>Espace formation</h4>
-        {courses.map((c) => lien(`/espace/formations/${c.id}`, c.emoji, c.title.replace(/^Formation /, '')))}
-        {lien('/espace/formations', '📚', 'Toutes les formations')}
+        {categories.map((c) => lien(`/espace/formations/categorie/${c.slug}`, c.emoji, c.nom))}
+        {lien('/espace/formations', '🔎', 'Rechercher une niche')}
 
         <h4>Communauté</h4>
         {lien('/espace/membres', '👥', 'Membres')}
