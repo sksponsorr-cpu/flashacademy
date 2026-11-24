@@ -5,7 +5,11 @@ import { ajouterConsigne, supprimerConsigne } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AmiAdmin() {
+export default async function AmiAdmin({
+  searchParams,
+}: {
+  searchParams: { erreur?: string; ok?: string };
+}) {
   const { supabase, profil } = await session();
   if (!estAdmin(profil)) redirect('/espace');
   const { data } = await supabase
@@ -17,6 +21,11 @@ export default async function AmiAdmin() {
     <>
       <h1>Agence Ami : consignes</h1>
       <p className="muted">Ajoutez des consignes, astuces, tests ou documents. Les vocaux, PDF et vidéos sont transcrits automatiquement.</p>
+
+      {searchParams?.erreur && (
+        <div className="msg erreur">{searchParams.erreur}</div>
+      )}
+      {searchParams?.ok && <div className="msg">Consigne enregistrée.</div>}
 
       <div className="card">
         <h3>Ajouter</h3>
