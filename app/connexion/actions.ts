@@ -4,7 +4,6 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
 const txt = (f: FormData, k: string) => String(f.get(k) ?? '').trim();
-const siteUrl = () => process.env.NEXT_PUBLIC_SITE_URL || '';
 
 export async function seConnecter(formData: FormData) {
   const supabase = createClient();
@@ -51,9 +50,8 @@ export async function renvoyerCode(formData: FormData) {
 
 export async function demanderReinitialisation(formData: FormData) {
   const supabase = createClient();
-  await supabase.auth.resetPasswordForEmail(txt(formData, 'email'), {
-    redirectTo: `${siteUrl()}/auth/callback?next=/connexion/nouveau-mot-de-passe`,
-  });
+  // Pas de redirectTo : le lien vient du modèle d'email (/auth/confirm) qui ouvre la session.
+  await supabase.auth.resetPasswordForEmail(txt(formData, 'email'));
   redirect('/connexion/mot-de-passe-oublie?envoye=1');
 }
 
