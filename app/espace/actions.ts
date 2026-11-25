@@ -197,6 +197,8 @@ export async function sauverAccueil(formData: FormData) {
     texte: txt(formData, 'texte'),
     video: txt(formData, 'video'),
     fondateur: txt(formData, 'fondateur'),
+    fondateur_nom: txt(formData, 'fondateur_nom'),
+    fondateur_photo: txt(formData, 'fondateur_photo'),
     faq,
   };
   await supabase.from('settings').upsert({ key: 'accueil', value });
