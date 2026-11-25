@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
+import LecteurVideo from '@/components/LecteurVideo';
 import { createClient } from '@/lib/supabase/server';
 import { fcfa } from '@/lib/access';
 import Compte from '@/components/Compte';
@@ -80,11 +81,7 @@ export default async function Accueil() {
           className="card hero"
           style={{ aspectRatio: '16/9', display: 'grid', placeItems: 'center', padding: 0, overflow: 'hidden', marginTop: 20 }}
         >
-          {a.video ? (
-            <a href={a.video} target="_blank" rel="noopener" style={{ color: '#fff', fontWeight: 700 }}>▶ Regarder la vidéo de présentation</a>
-          ) : (
-            <span style={{ color: '#fff', opacity: 0.85 }}>▶ Vidéo de présentation</span>
-          )}
+          <LecteurVideo url={a.video} />
         </div>
 
         {/* Formations */}
