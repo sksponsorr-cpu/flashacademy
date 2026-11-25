@@ -5,6 +5,7 @@ import { session } from '@/lib/session';
 import { estAdmin, fcfa } from '@/lib/access';
 import {
   ajouterFormation, supprimerFormation, ajouterOffre, supprimerOffre, basculerMembre, sauverAccueil,
+  sauverFormateurs, sauverCertification,
   ajouterCategorie, supprimerCategorie, ajouterNiche, supprimerNiche, sauverVideoUne,
 } from '../actions';
 
@@ -43,6 +44,8 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
     supabase.from('settings').select('value').eq('key', 'accueil').maybeSingle(),
   ]);
   const { data: vu } = await supabase.from('settings').select('value').eq('key', 'video_une').maybeSingle();
+  const { data: profs } = await supabase.from('profiles').select('id,name,role,certifie,reseaux').order('name').limit(300);
+  const { data: liens } = await supabase.from('cours_formateurs').select('course_id,profile_id');
   const une: any = vu?.value || {};
   const a: any = reg?.value || {};
   const faqTxt = (a.faq || []).map((f: any) => `${f.q} | ${f.a}`).join('\n');
@@ -138,8 +141,8 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
                 <option>Avancé</option>
               </select>
               <MediaInput name="miniature" label="Miniature de la formation (galerie ou lien)" type="image" />
-              <label>Modules (un par ligne : titre | durée)</label>
-              <textarea name="modules" rows={5} placeholder={'Introduction | 5 min\nCréer son compte | 12 min'} />
+              <label>Modules (un par ligne : titre | durée | lien vidéo facultatif)</label>
+              <textarea name="modules" rows={5} placeholder={'Introduction | 5 min | https://youtu.be/...\nCréer son compte | 12 min | https://youtu.be/...'} />
               <button className="btn block" style={{ marginTop: 14 }} type="submit">Publier la formation</button>
             </form>
           </Etape>
@@ -155,6 +158,25 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
                 <input type="hidden" name="id" value={c.id} />
                 <button className="btn danger sm" type="submit">Supprimer</button>
               </form>
+              <details style={{ width: '100%' }}>
+                <summary className="muted" style={{ cursor: 'pointer' }}>Formateurs du cours</summary>
+                <form action={sauverFormateurs} style={{ marginTop: 8 }}>
+                  <input type="hidden" name="course_id" value={c.id} />
+                  {(profs || []).map((p: any) => (
+                    <label key={p.id} style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '6px 0' }}>
+                      <input
+                        type="checkbox"
+                        name="formateur"
+                        value={p.id}
+                        defaultChecked={(liens || []).some((l: any) => l.course_id === c.id && l.profile_id === p.id)}
+                        style={{ width: 'auto', margin: 0 }}
+                      />
+                      {p.name}{p.certifie ? ' ✓ certifié' : ''}
+                    </label>
+                  ))}
+                  <button className="btn sm" style={{ marginTop: 8 }} type="submit">Enregistrer les formateurs</button>
+                </form>
+              </details>
             </div>
           ))}
         </>
@@ -177,6 +199,27 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
               <input type="hidden" name="champ" value="ban" />
               <button className={`btn sm ${m.banned ? 'ghost' : 'danger'}`} type="submit">{m.banned ? 'Débannir' : 'Bannir'}</button>
             </form>
+            <details style={{ width: '100%' }}>
+              <summary className="muted" style={{ cursor: 'pointer' }}>Certification et réseaux</summary>
+              <form action={sauverCertification} style={{ marginTop: 8 }}>
+                <input type="hidden" name="id" value={m.id} />
+                <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input type="checkbox" name="certifie" defaultChecked={!!m.certifie} style={{ width: 'auto', margin: 0 }} />
+                  Certifié (badge affiché sur les formations)
+                </label>
+                <label>Site</label>
+                <input name="site" defaultValue={m.reseaux?.site || ''} placeholder="https://..." />
+                <label>Instagram</label>
+                <input name="instagram" defaultValue={m.reseaux?.instagram || ''} placeholder="https://instagram.com/..." />
+                <label>YouTube</label>
+                <input name="youtube" defaultValue={m.reseaux?.youtube || ''} placeholder="https://youtube.com/..." />
+                <label>TikTok</label>
+                <input name="tiktok" defaultValue={m.reseaux?.tiktok || ''} placeholder="https://tiktok.com/@..." />
+                <label>LinkedIn</label>
+                <input name="linkedin" defaultValue={m.reseaux?.linkedin || ''} placeholder="https://linkedin.com/in/..." />
+                <button className="btn sm" style={{ marginTop: 10 }} type="submit">Enregistrer</button>
+              </form>
+            </details>
           </div>
         ))}
 
