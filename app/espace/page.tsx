@@ -1,3 +1,4 @@
+import LecteurVideo from '@/components/LecteurVideo';
 import Link from 'next/link';
 import { session } from '@/lib/session';
 import { peutAcceder, initiale } from '@/lib/access';
@@ -20,12 +21,12 @@ export default async function Flux() {
   return (
     <>
       {video?.titre && (
-        <a href={video.url || '#'} target="_blank" rel="noopener" className="card video-une rv">
-          <div className="thumb" style={video.image ? { backgroundImage: `url('${video.image}')` } : { background: 'linear-gradient(135deg,#1e3a8a,#8b5cf6)' }}>
-            <span className="play">▶</span>
+        <div className="card video-une rv">
+          <div style={{ aspectRatio: '16/9', borderRadius: 14, overflow: 'hidden', background: '#000' }}>
+            <LecteurVideo url={video.url} poster={video.image} />
           </div>
           <h2>{video.titre}</h2>
-        </a>
+        </div>
       )}
 
       {!profil?.validated && (
