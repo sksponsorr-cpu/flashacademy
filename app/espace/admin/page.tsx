@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import MediaInput from '@/components/MediaInput';
 import { session } from '@/lib/session';
 import { estAdmin, fcfa } from '@/lib/access';
 import {
@@ -136,8 +137,7 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
                 <option>Intermédiaire</option>
                 <option>Avancé</option>
               </select>
-              <label>Lien de la miniature (facultatif)</label>
-              <input name="miniature" placeholder="https://..." />
+              <MediaInput name="miniature" label="Miniature de la formation (galerie ou lien)" type="image" />
               <label>Modules (un par ligne : titre | durée)</label>
               <textarea name="modules" rows={5} placeholder={'Introduction | 5 min\nCréer son compte | 12 min'} />
               <button className="btn block" style={{ marginTop: 14 }} type="submit">Publier la formation</button>
@@ -225,10 +225,8 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
           <form action={sauverVideoUne}>
             <label>Titre de la vidéo</label>
             <input name="titre" defaultValue={une.titre || ''} placeholder="Vidéo très IMPORTANTE !" />
-            <label>Lien de la miniature</label>
-            <input name="image" defaultValue={une.image || ''} placeholder="https://..." />
-            <label>Lien de la vidéo</label>
-            <input name="url" defaultValue={une.url || ''} placeholder="https://..." />
+            <MediaInput name="image" label="Miniature (galerie ou lien)" defaultValue={une.image || ''} type="image" />
+            <MediaInput name="url" label="Vidéo (galerie, YouTube ou Vimeo)" defaultValue={une.url || ''} type="video" />
             <button className="btn block" style={{ marginTop: 12 }} type="submit">Enregistrer la vidéo</button>
           </form>
         </div>
@@ -242,8 +240,10 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
             <input name="titre" defaultValue={a.titre || ''} />
             <label>Texte d’accroche</label>
             <textarea name="texte" rows={2} defaultValue={a.texte || ''} />
-            <label>Lien de la vidéo de présentation</label>
-            <input name="video" defaultValue={a.video || ''} placeholder="https://..." />
+            <MediaInput name="video" label="Vidéo de présentation (galerie, YouTube ou Vimeo)" defaultValue={a.video || ''} type="video" />
+            <label>Nom du fondateur</label>
+            <input name="fondateur_nom" defaultValue={a.fondateur_nom || ''} />
+            <MediaInput name="fondateur_photo" label="Photo du fondateur (galerie ou lien)" defaultValue={a.fondateur_photo || ''} type="image" />
             <label>Texte du fondateur</label>
             <textarea name="fondateur" rows={3} defaultValue={a.fondateur || ''} />
             <label>Questions fréquentes (une par ligne : Question ? | Réponse)</label>
