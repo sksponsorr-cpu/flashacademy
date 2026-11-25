@@ -27,12 +27,14 @@ export default function Menu({ categories, acces, admin, partenaire, nom, photo 
           <i /><i /><i />
         </button>
         <Link href="/espace" className="logo">Flash<span>Academy</span></Link>
-        <Link href="/espace/profil">
-          <div className="avatar" style={photo ? { backgroundImage: `url('${photo}')` } : {}}>
-            {photo ? '' : initiale(nom)}
-            <ThemeToggle />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
+          <ThemeToggle />
+          <Link href="/espace/profil" aria-label="Mon profil">
+            <div className="avatar" style={photo ? { backgroundImage: `url('${photo}')` } : {}}>
+              {photo ? '' : initiale(nom)}
+            </div>
+          </Link>
         </div>
-        </Link>
       </div>
 
       <div className={`overlay ${ouvert ? 'open' : ''}`} onClick={fermer} />
