@@ -105,8 +105,13 @@ async function admin() {
 
 function parseModules(t: string) {
   return lignes(t).map((l, i) => {
-    const [titre, duree] = l.split('|');
-    return { position: i + 1, title: (titre || '').trim(), duration: (duree || '').trim() };
+    const [titre, duree, video] = l.split('|');
+    return {
+      position: i + 1,
+      title: (titre || '').trim(),
+      duration: (duree || '').trim(),
+      video_url: (video || '').trim() || null,
+    };
   });
 }
 
@@ -264,4 +269,48 @@ export async function sauverVideoUne(formData: FormData) {
   });
   revalidatePath('/espace', 'layout');
   revalidatePath('/espace/admin');
+}
+
+
+// Formateurs rattachés à une formation (choisis par l'administrateur)
+export async function sauverFormateurs(formData: FormData) {
+  const { supabase } = await admin();
+  const courseId = Number(txt(formData, 'course_id'));
+  const ids = formData.getAll('formateur').map(String).filter(Boolean);
+  await supabase.from('cours_formateurs').delete().eq('course_id', courseId);
+  if (ids.length) {
+    await supabase.from('cours_formateurs').insert(ids.map((profile_id) => ({ course_id: courseId, profile_id })));
+  }
+  revalidatePath('/espace/admin');
+  revalidatePath(`/espace/formations/${courseId}`);
+}
+
+// Certification et réseaux sociaux d'un membre
+export async function sauverCertification(formData: FormData) {
+  const { supabase } = await admin();
+  const id = txt(formData, 'id');
+  const reseaux = {
+    site: txt(formData, 'site'),
+    instagram: txt(formData, 'instagram'),
+    youtube: txt(formData, 'youtube'),
+    tiktok: txt(formData, 'tiktok'),
+    linkedin: txt(formData, 'linkedin'),
+  };
+  await supabase
+    .from('profiles')
+    .update({ certifie: formData.get('certifie') === 'on', reseaux })
+    .eq('id', id);
+  revalidatePath('/espace/admin');
+}
+
+
+// Commentaire d'un membre sur un module
+export async function publierCommentaire(formData: FormData) {
+  const { supabase, user, profil } = await session();
+  const moduleId = Number(txt(formData, 'module'));
+  const courseId = txt(formData, 'cours');
+  const contenu = txt(formData, 'contenu').slice(0, 1000);
+  if (!aAcces(profil) || !contenu || !moduleId) return;
+  await supabase.from('commentaires_module').insert({ module_id: moduleId, user_id: user.id, contenu });
+  revalidatePath(`/espace/formations/${courseId}`);
 }
