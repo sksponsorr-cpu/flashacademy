@@ -104,13 +104,34 @@ async function admin() {
 }
 
 function parseModules(t: string) {
+  // Format JSON envoyé par l'éditeur de modules (un objet par module).
+  try {
+    const liste = JSON.parse(t);
+    if (Array.isArray(liste)) {
+      return liste
+        .filter((m: any) => m && String(m.titre || '').trim())
+        .map((m: any, i: number) => ({
+          position: i + 1,
+          title: String(m.titre).trim(),
+          duration: String(m.duree || '').trim(),
+          video_url: String(m.video || '').trim() || null,
+        }));
+    }
+  } catch {
+    // Pas du JSON : on garde l'ancien format texte « titre | durée | lien ».
+  }
   return lignes(t).map((l, i) => {
-    const [titre, duree, video] = l.split('|');
+    let [titre, duree, video] = l.split('|').map((x) => (x || '').trim());
+    // Si le lien a été collé dans le titre, on le déplace vers le champ vidéo.
+    if (/^https?:\/\//i.test(titre) && !video) {
+      video = titre;
+      titre = '';
+    }
     return {
       position: i + 1,
-      title: (titre || '').trim(),
-      duration: (duree || '').trim(),
-      video_url: (video || '').trim() || null,
+      title: titre || `Module ${i + 1}`,
+      duration: duree || '',
+      video_url: video || null,
     };
   });
 }
@@ -246,6 +267,7 @@ export async function ajouterNiche(formData: FormData) {
     categorie_id: categorie,
     nom,
     description: txt(formData, 'description'),
+    miniature: txt(formData, 'miniature') || null,
     ordre: Number(txt(formData, 'ordre')) || 0,
   });
   revalidatePath('/espace/formations');
