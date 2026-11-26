@@ -1,178 +1,120 @@
-// ============================================
-// FLASHPAY - CLIENT SERVEUR
-// FLASHACADEMY
-// ============================================
+// Client officiel FlashPay — serveur uniquement
 
-// API officielle
-const BASE = 'https://flasshpay.my/api/v1';
+const BASE_URL = 'https://flasshpay.my/api/v1';
 
-// Récupération sécurisée de la clé API
-function cle(): string {
-const key = process.env.FLASHPAY_KEY?.trim();
+function obtenirCle(): string {
+  const key = process.env.FLASHPAY_KEY;
 
-if (!key) {
-throw new Error('Variable FLASHPAY_KEY manquante.');
+  if (!key || !key.trim()) {
+    throw new Error('Variable FLASHPAY_KEY manquante');
+  }
+
+  return key.trim();
 }
 
-return key;
+type CollecteInput = {
+  country_code: string;
+  amount: number;
+  transaction_id: string;
+  description?: string;
+  callback_url?: string;
+  failed_callback_url?: string;
+};
+
+async function lireReponse(response: Response) {
+  const json = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new Error(
+      json?.error?.message ||
+      json?.message ||
+      `Erreur FlashPay HTTP ${response.status}`
+    );
+  }
+
+  return json;
 }
 
-// Données nécessaires à la création du paiement
-export type CollecteInput = {
-country_code: string;
-amount: number;
-transaction_id: string;
-name: string;
-mobile: string;
-description?: string;
-callback_url?: string;
-failed_callback_url?: string;
-};
-
-// Réponse de création
-export type CollecteResponse = {
-checkout_url: string;
-};
-
-// ============================================
-// CRÉATION D'UN PAIEMENT
-// ============================================
-
+// Création du paiement
 export async function creerCollecte(
-input: CollecteInput
-): Promise<CollecteResponse> {
+  input: CollecteInput
+): Promise<{ checkout_url: string }> {
 
-const apiKey = cle();
+  if (!input.country_code || !input.transaction_id) {
+    throw new Error('Pays ou identifiant de transaction manquant');
+  }
 
-// Vérifications
-if (!input.country_code) {
-throw new Error('Pays du paiement manquant.');
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    throw new Error('Montant de paiement invalide');
+  }
+
+  const endpoint = `${BASE_URL}/collections`;
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+
+    headers: {
+      'X-FlashPay-Key': obtenirCle(),
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+
+    body: JSON.stringify({
+      country_code: input.country_code,
+      amount: input.amount,
+      transaction_id: input.transaction_id,
+      description: input.description,
+      callback_url: input.callback_url,
+      failed_callback_url: input.failed_callback_url,
+      checkout: 'hosted',
+    }),
+
+    cache: 'no-store',
+  });
+
+  const result = await lireReponse(response);
+
+  const checkoutUrl = result?.data?.checkout_url;
+
+  if (!checkoutUrl) {
+    throw new Error('FlashPay n’a pas retourné checkout_url');
+  }
+
+  return {
+    checkout_url: checkoutUrl,
+  };
 }
 
-if (!Number.isFinite(input.amount) || input.amount <= 0) {
-throw new Error('Montant du paiement invalide.');
-}
-
-if (!input.transaction_id?.trim()) {
-throw new Error('Identifiant de transaction manquant.');
-}
-
-if (!input.name?.trim()) {
-throw new Error('Le nom du payeur est obligatoire.');
-}
-
-if (!input.mobile?.trim()) {
-throw new Error('Le numéro mobile du payeur est obligatoire.');
-}
-
-const payload = {
-country_code: input.country_code.toUpperCase(),
-amount: input.amount,
-transaction_id: input.transaction_id,
-name: input.name.trim(),
-mobile: input.mobile.trim(),
-description: input.description,
-checkout: 'hosted',
-callback_url: input.callback_url,
-failed_callback_url: input.failed_callback_url,
-};
-
-const response = await fetch(
-"${BASE}/collections",
-{
-method: 'POST',
-headers: {
-'X-FlashPay-Key': apiKey,
-'Content-Type': 'application/json',
-'Accept': 'application/json',
-},
-body: JSON.stringify(payload),
-cache: 'no-store',
-}
-);
-
-const json = await response.json().catch(() => null);
-
-if (!response.ok) {
-const message =
-json?.message ||
-json?.error?.message ||
-"Erreur FlashPay HTTP ${response.status}";
-
-console.error('Erreur création FlashPay:', {
-  status: response.status,
-  message,
-});
-
-throw new Error(message);
-
-}
-
-const checkoutUrl = json?.data?.checkout_url;
-
-if (
-typeof checkoutUrl !== 'string' ||
-!checkoutUrl.startsWith('https://')
-) {
-throw new Error(
-'FlashPay n’a pas retourné une adresse checkout_url valide.'
-);
-}
-
-return {
-checkout_url: checkoutUrl,
-};
-}
-
-// ============================================
-// VÉRIFICATION DU STATUT DU PAIEMENT
-// ============================================
-
+// Vérification du paiement
 export async function statutCollecte(
-transaction_id: string
+  transaction_id: string
 ): Promise<string> {
 
-const apiKey = cle();
+  if (!transaction_id) {
+    throw new Error('Identifiant de transaction manquant');
+  }
 
-if (!transaction_id?.trim()) {
-throw new Error('Identifiant de transaction manquant.');
-}
+  const endpoint =
+    `${BASE_URL}/collections/${encodeURIComponent(transaction_id)}`;
 
-const response = await fetch(
-"${BASE}/collections/${encodeURIComponent(transaction_id)}",
-{
-method: 'GET',
-headers: {
-'X-FlashPay-Key': apiKey,
-'Accept': 'application/json',
-},
-cache: 'no-store',
-}
-);
+  const response = await fetch(endpoint, {
+    method: 'GET',
 
-const json = await response.json().catch(() => null);
+    headers: {
+      'X-FlashPay-Key': obtenirCle(),
+      'Accept': 'application/json',
+    },
 
-if (!response.ok) {
-throw new Error(
-json?.message ||
-json?.error?.message ||
-"Erreur FlashPay HTTP ${response.status}"
-);
-}
+    cache: 'no-store',
+  });
 
-const status = json?.data?.status;
+  const result = await lireReponse(response);
 
-const statutsAutorises = [
-'pending',
-'successful',
-'failed',
-'cancelled',
-'expired',
-];
+  const status = result?.data?.status;
 
-if (!statutsAutorises.includes(status)) {
-throw new Error('Statut FlashPay inconnu.');
-}
+  if (!status) {
+    throw new Error('Statut FlashPay introuvable');
+  }
 
-return status;
+  return status;
 }
