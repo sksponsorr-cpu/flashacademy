@@ -77,12 +77,14 @@ export default async function Accueil() {
         </section>
 
         {/* Vidéo de présentation */}
-        <div
-          className="card hero"
-          style={{ aspectRatio: '16/9', display: 'grid', placeItems: 'center', padding: 0, overflow: 'hidden', marginTop: 20 }}
-        >
-          <LecteurVideo url={a.video} />
-        </div>
+        {a.video && (
+          <div
+            className="card"
+            style={{ width: '100%', maxWidth: 960, margin: '20px auto 0', padding: 0, overflow: 'hidden', aspectRatio: '16/9', borderRadius: 20 }}
+          >
+            <LecteurVideo url={a.video} />
+          </div>
+        )}
 
         {/* Formations */}
         <section style={{ marginTop: 28 }}>
