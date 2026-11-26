@@ -6,12 +6,25 @@ import BoutonPayer from '@/components/BoutonPayer';
 export const dynamic = 'force-dynamic';
 
 const PAYS = [
+  ['GH', '🇬🇭 Ghana'],
+  ['SL', '🇸🇱 Sierra Leone'],
+  ['NG', '🇳🇬 Nigeria'],
+  ['TZ', '🇹🇿 Tanzanie'],
+  ['UG', '🇺🇬 Ouganda'],
+  ['CD', '🇨🇩 République démocratique du Congo'],
+  ['CG', '🇨🇬 République du Congo'],
   ['CM', '🇨🇲 Cameroun'],
   ['CI', "🇨🇮 Côte d'Ivoire"],
   ['SN', '🇸🇳 Sénégal'],
   ['BJ', '🇧🇯 Bénin'],
   ['TG', '🇹🇬 Togo'],
-];
+  ['GA', '🇬🇦 Gabon'],
+  ['GM', '🇬🇲 Gambie'],
+  ['RW', '🇷🇼 Rwanda'],
+  ['GN', '🇬🇳 Guinée'],
+  ['BF', '🇧🇫 Burkina Faso'],
+  ['ML', '🇲🇱 Mali'],
+] as const;
 
 export default async function Offres({
   searchParams,
@@ -19,6 +32,7 @@ export default async function Offres({
   searchParams: { erreur?: string };
 }) {
   const { supabase, profil } = await session();
+
   const acces = peutAcceder(profil);
 
   const { data: offres } = await supabase
@@ -37,9 +51,9 @@ export default async function Offres({
           margin: 0 auto;
         }
 
-        @media (min-width: 760px) {
+        @media (min-width:760px) {
           .offres-grid {
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit,minmax(280px,1fr));
           }
         }
 
@@ -47,16 +61,16 @@ export default async function Offres({
           position: relative;
           display: flex;
           flex-direction: column;
-          gap: 18px;
-          padding: 25px;
-          border-radius: 22px;
+          gap: 17px;
+          padding: 24px;
+          border-radius: 20px;
           border: 1px solid var(--line);
-          background: var(--card, #fff);
+          background: var(--card,#fff);
         }
 
         .offre.best {
           border: 2px solid var(--accent);
-          box-shadow: 0 12px 35px rgba(37,99,235,.13);
+          box-shadow: 0 10px 30px rgba(37,99,235,.15);
         }
 
         .offre-badge {
@@ -64,7 +78,7 @@ export default async function Offres({
           top: -12px;
           left: 24px;
           background: var(--accent);
-          color: white;
+          color: #fff;
           font-size: 12px;
           font-weight: 700;
           padding: 5px 13px;
@@ -76,7 +90,7 @@ export default async function Offres({
           padding: 0;
           margin: 0;
           display: grid;
-          gap: 11px;
+          gap: 10px;
         }
 
         .offre-feat li {
@@ -93,36 +107,38 @@ export default async function Offres({
         }
 
         .offre-prix {
-          font-size: 35px;
+          font-size: 34px;
           font-weight: 850;
           line-height: 1.1;
         }
 
-        .paiement-infos {
+        .paiement-form {
           display: grid;
-          gap: 7px;
+          gap: 12px;
         }
 
-        .paiement-infos label {
+        .paiement-form label {
+          display: block;
           font-size: 13px;
           font-weight: 700;
+          margin-bottom: 6px;
         }
 
-        .paiement-infos input,
-        .paiement-infos select {
+        .paiement-form input,
+        .paiement-form select {
           width: 100%;
           box-sizing: border-box;
           min-height: 46px;
           padding: 11px 13px;
-          border-radius: 11px;
           border: 1px solid var(--line);
-          background: var(--card, #fff);
+          border-radius: 11px;
+          background: var(--card,#fff);
           color: inherit;
           font: inherit;
         }
 
-        .paiement-infos input:focus,
-        .paiement-infos select:focus {
+        .paiement-form input:focus,
+        .paiement-form select:focus {
           outline: 2px solid var(--accent);
           outline-offset: 1px;
         }
@@ -134,13 +150,16 @@ export default async function Offres({
         }
       `}</style>
 
-      <div style={{ textAlign: 'center', margin: '8px 0 25px' }}>
+      <div style={{
+        textAlign: 'center',
+        margin: '8px 0 25px'
+      }}>
         <h1 style={{ margin: 0 }}>Nos offres</h1>
 
-        <p className="muted" style={{ margin: '7px 0 0' }}>
+        <p className="muted" style={{ marginTop: 7 }}>
           {acces
             ? 'Vous avez accès à toutes les formations.'
-            : 'Choisissez votre formule et profitez de toutes les fonctionnalités.'}
+            : 'Choisissez votre formule et profitez de toutes nos formations.'}
         </p>
       </div>
 
@@ -150,22 +169,29 @@ export default async function Offres({
           style={{ maxWidth: 960, margin: '0 auto 18px' }}
         >
           Le paiement n'a pas pu être lancé.
-          (Code : {searchParams.erreur}). Vérifiez vos informations et réessayez.
+          Code : {searchParams.erreur}.
+          Vérifiez vos informations et réessayez.
         </div>
       )}
 
       <div className="offres-grid">
+
         {(offres || []).map((o: any) => (
           <div
             key={o.id}
             className={`offre ${o.best ? 'best' : ''}`}
           >
+
             {o.best && (
-              <span className="offre-badge">Le plus choisi</span>
+              <span className="offre-badge">
+                Le plus choisi
+              </span>
             )}
 
             <div>
-              <h3 style={{ margin: 0 }}>{o.name}</h3>
+              <h3 style={{ margin: 0 }}>
+                {o.name}
+              </h3>
 
               <div
                 className="offre-prix"
@@ -188,6 +214,7 @@ export default async function Offres({
             )}
 
             <div style={{ marginTop: 'auto' }}>
+
               {acces ? (
                 <span
                   className="btn off block"
@@ -196,49 +223,53 @@ export default async function Offres({
                   Offre active
                 </span>
               ) : (
+
                 <form
                   action={payerOffre}
-                  style={{ display: 'grid', gap: 13 }}
+                  className="paiement-form"
                 >
+
                   <input
                     type="hidden"
                     name="offre"
                     value={o.id}
                   />
 
-                  <div className="paiement-infos">
+                  <div>
                     <label htmlFor={`nom-${o.id}`}>
-                      Nom complet du payeur
+                      Votre nom complet
                     </label>
 
                     <input
                       id={`nom-${o.id}`}
                       type="text"
-                      name="name"
-                      placeholder="Exemple : Jean Dupont"
+                      name="nom"
+                      placeholder="Entrez votre nom complet"
                       autoComplete="name"
+                      minLength={2}
+                      maxLength={100}
                       required
                     />
                   </div>
 
-                  <div className="paiement-infos">
+                  <div>
                     <label htmlFor={`mobile-${o.id}`}>
-                      Numéro mobile du payeur
+                      Votre numéro de téléphone
                     </label>
 
                     <input
                       id={`mobile-${o.id}`}
                       type="tel"
                       name="mobile"
-                      placeholder="Exemple : 699000000"
+                      placeholder="Votre numéro mobile"
                       autoComplete="tel"
                       required
                     />
                   </div>
 
-                  <div className="paiement-infos">
+                  <div>
                     <label htmlFor={`pays-${o.id}`}>
-                      Pays de paiement
+                      Votre pays
                     </label>
 
                     <select
@@ -258,14 +289,18 @@ export default async function Offres({
                   <BoutonPayer montant={fcfa(o.price)} />
 
                   <p className="paiement-note">
-                    Vos informations servent uniquement à identifier
-                    le payeur lors du paiement sécurisé FlashPay.
+                    Votre adresse e-mail sera récupérée
+                    automatiquement depuis votre compte.
+                    Paiement sécurisé avec FlashPay.
                   </p>
+
                 </form>
               )}
+
             </div>
           </div>
         ))}
+
       </div>
 
       {!acces && (
@@ -274,13 +309,13 @@ export default async function Offres({
           style={{
             marginTop: 22,
             textAlign: 'center',
-            fontSize: 14,
+            fontSize: 14
           }}
         >
-          Paiement sécurisé par mobile money avec FlashPay.
+          Paiement mobile money sécurisé.
           Votre accès sera activé après confirmation du paiement.
         </p>
       )}
     </>
   );
-}
+         }
