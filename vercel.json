@@ -1,6 +1,5 @@
 {
-  "crons": [
-    { "path": "/api/cron/reconcile", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/identity-cleanup", "schedule": "0 4 * * *" }
-  ]
+  "git": {
+    "deploymentEnabled": false
+  }
 }
