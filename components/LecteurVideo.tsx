@@ -1,24 +1,43 @@
+'use client';
+
+import { useState } from 'react';
 import { lienIntegration } from '@/lib/media';
 
-// Lit la vidéo directement sur le site : YouTube et Vimeo en lecteur intégré, fichier direct en lecteur natif.
+// Lit la vidéo sur le site : YouTube / Vimeo en lecteur intégré, sinon fichier vidéo direct (mp4, webm, mov, ou tout lien https).
 export default function LecteurVideo({ url, poster }: { url?: string | null; poster?: string | null }) {
+  const [erreur, setErreur] = useState(false);
+
   if (!url) {
-    return <span style={{ color: '#fff', opacity: 0.85 }}>▶ Vidéo bientôt disponible</span>;
+    return <div style={{ height: '100%', display: 'grid', placeItems: 'center', color: '#fff', opacity: 0.85 }}>Vidéo bientôt disponible</div>;
   }
+
   const integration = lienIntegration(url);
   if (integration) {
     return (
       <iframe
         src={integration}
         title="Vidéo"
-        style={{ width: '100%', height: '100%', border: 0, minHeight: 200 }}
+        style={{ width: '100%', height: '100%', border: 0 }}
         allow="accelerometer; autoplay; encrypted-media; picture-in-picture"
         allowFullScreen
       />
     );
   }
-  if (/\.(mp4|webm|mov)(\?|$)/i.test(url)) {
-    return <video src={url} poster={poster || undefined} controls playsInline style={{ width: '100%', height: '100%' }} />;
+
+  if (erreur) {
+    return <div style={{ height: '100%', display: 'grid', placeItems: 'center', color: '#fff', padding: 16, textAlign: 'center' }}>La vidéo ne peut pas être lue. Vérifiez le lien.</div>;
   }
-  return <span style={{ color: '#fff', opacity: 0.85 }}>Lien vidéo non reconnu</span>;
+
+  return (
+    <video
+      key={url}
+      src={url}
+      poster={poster || undefined}
+      controls
+      playsInline
+      preload="metadata"
+      onError={() => setErreur(true)}
+      style={{ width: '100%', height: '100%', background: '#000' }}
+    />
+  );
 }
