@@ -6,20 +6,25 @@ import { statutCollecte } from '@/lib/flasshpay';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-// Reçoit les notifications de flasshpay.
-// 1) vérifie la signature avec le secret du webhook, 2) relit le statut auprès de flasshpay,
-// 3) active l'accès seulement si le paiement est confirmé.
+// Vérifie la signature flasshpay : HMAC-SHA256 de "timestamp.corps brut", avec le secret du webhook.
+function signatureValide(brut: string, timestamp: string, signature: string, secret: string): boolean {
+  if (!timestamp || !signature) return false;
+  // Rejette les envois trop anciens (protection contre le rejeu, 5 minutes)
+  if (Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) return false;
+  const attendue = createHmac('sha256', secret).update(`${timestamp}.${brut}`).digest('hex');
+  return attendue.length === signature.length && timingSafeEqual(Buffer.from(attendue), Buffer.from(signature));
+}
+
 export async function POST(req: Request) {
   const secret = process.env.FLASSHPAY_WEBHOOK_SECRET;
   if (!secret) return new NextResponse('Configuration manquante', { status: 500 });
 
   const brut = await req.text();
-  const attendue = createHmac('sha512', secret).update(brut).digest('hex');
-  const recue = req.headers.get('x-flashpay-signature') || '';
-  const valide =
-    recue.length === attendue.length &&
-    timingSafeEqual(Buffer.from(recue), Buffer.from(attendue));
-  if (!valide) return new NextResponse('Signature invalide', { status: 401 });
+  const timestamp = req.headers.get('x-flashpay-timestamp') || '';
+  const signature = req.headers.get('x-flashpay-signature') || '';
+  if (!signatureValide(brut, timestamp, signature, secret)) {
+    return new NextResponse('Signature invalide', { status: 401 });
+  }
 
   let evenement: any;
   try {
@@ -28,26 +33,27 @@ export async function POST(req: Request) {
     return new NextResponse('JSON invalide', { status: 400 });
   }
 
-  const tx: string | undefined = evenement?.data?.transaction_id || evenement?.transaction_id;
+  // On ne traite que les paiements réussis ; les autres événements sont simplement acquittés.
+  if (evenement?.event !== 'transaction.successful') return new NextResponse('ok', { status: 200 });
+  const tx: string | undefined = evenement?.data?.transaction_id;
   if (!tx) return new NextResponse('ok', { status: 200 });
 
   const db = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { persistSession: false },
   });
 
+  // Vérification complémentaire : on relit le statut auprès de flasshpay avant de livrer.
   let statut: string;
   try {
     statut = await statutCollecte(tx);
   } catch (e) {
     console.error('webhook flasshpay : statut indisponible', e);
-    // 500 : flasshpay réessaiera la notification plus tard
     return new NextResponse('Réessayer plus tard', { status: 500 });
   }
 
+  // Traitement idempotent : activer_acces peut être appelée plusieurs fois sans effet secondaire.
   if (statut === 'successful') {
     await db.rpc('activer_acces', { p_tx: tx });
-  } else if (['failed', 'cancelled', 'expired'].includes(statut)) {
-    await db.from('paiements').update({ status: statut }).eq('transaction_id', tx);
   }
   return new NextResponse('ok', { status: 200 });
 }
