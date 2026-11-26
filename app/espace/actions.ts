@@ -358,3 +358,52 @@ export async function modifierOffre(formData: FormData) {
   revalidatePath('/espace/offres');
   revalidatePath('/');
 }
+
+
+// Modification d'une formation existante : infos, modules modifiés, ajoutés ou retirés.
+export async function modifierFormation(formData: FormData) {
+  const { supabase } = await admin();
+  const id = Number(txt(formData, 'id'));
+  if (!id) return;
+  await supabase
+    .from('courses')
+    .update({
+      title: txt(formData, 'titre'),
+      level: txt(formData, 'niveau') || 'Débutant',
+      thumb: txt(formData, 'miniature'),
+      niche_id: Number(txt(formData, 'niche')) || null,
+    })
+    .eq('id', id);
+
+  let liste: any[] = [];
+  try {
+    liste = JSON.parse(txt(formData, 'modules'));
+  } catch {
+    liste = [];
+  }
+  const { data: existants } = await supabase.from('modules').select('id').eq('course_id', id);
+  const gardes = new Set<number>();
+  let position = 0;
+  for (const m of liste) {
+    if (!String(m?.titre || '').trim()) continue;
+    position += 1;
+    const champs = {
+      position,
+      title: String(m.titre).trim(),
+      duration: String(m.duree || '').trim(),
+      video_url: String(m.video || '').trim() || null,
+    };
+    if (m.id) {
+      gardes.add(Number(m.id));
+      await supabase.from('modules').update(champs).eq('id', Number(m.id)).eq('course_id', id);
+    } else {
+      await supabase.from('modules').insert({ ...champs, course_id: id });
+    }
+  }
+  const aRetirer = (existants || []).map((x: any) => x.id).filter((x: number) => !gardes.has(x));
+  if (aRetirer.length) await supabase.from('modules').delete().in('id', aRetirer);
+
+  revalidatePath('/espace/formations');
+  revalidatePath(`/espace/formations/${id}`);
+  revalidatePath('/espace/admin');
+}
