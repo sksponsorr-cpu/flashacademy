@@ -20,11 +20,19 @@ export default async function Cours({ params }: { params: { id: string } }) {
     .maybeSingle();
   if (!c) notFound();
 
-  const { data: offres } = await supabase.from('offers').select('price').order('price').limit(1);
-  const { data: fait } = await supabase.from('progress').select('module_id').eq('user_id', profil?.id);
-  const faits = new Set((fait || []).map((f: any) => f.module_id));
-
   const mods = [...((c as any).modules || [])].sort((a: any, b: any) => a.position - b.position);
+  const idsModules = mods.map((m: any) => m.id);
+
+  // Requêtes indépendantes lancées en parallèle (au lieu de les enchaîner).
+  const [{ data: offres }, { data: fait }, { data: com }, { data: liens }] = await Promise.all([
+    supabase.from('offers').select('price').order('price').limit(1),
+    supabase.from('progress').select('module_id').eq('user_id', profil?.id),
+    idsModules.length
+      ? supabase.from('commentaires_module').select('id,module_id,user_id,contenu,created_at').in('module_id', idsModules).order('created_at')
+      : Promise.resolve({ data: [] as any[] }),
+    supabase.from('cours_formateurs').select('profile_id').eq('course_id', c.id),
+  ]);
+  const faits = new Set((fait || []).map((f: any) => f.module_id));
   const suivi = mods.length ? Math.round((mods.filter((m: any) => faits.has(m.id)).length / mods.length) * 100) : 0;
   const min = offres?.[0]?.price;
 
@@ -38,15 +46,16 @@ export default async function Cours({ params }: { params: { id: string } }) {
     fait: faits.has(m.id),
   }));
 
-  // Commentaires de tous les modules du cours
-  const idsModules = mods.map((m: any) => m.id);
-  const { data: com } = idsModules.length
-    ? await supabase.from('commentaires_module').select('id,module_id,user_id,contenu,created_at').in('module_id', idsModules).order('created_at')
-    : { data: [] as any[] };
   const userIds = [...new Set((com || []).map((x: any) => x.user_id))];
-  const { data: auteurs } = userIds.length
-    ? await supabase.from('profiles').select('id,name').in('id', userIds)
+  const idsFormateurs = (liens || []).map((l: any) => l.profile_id);
+  // Auteurs des commentaires et formateurs : chargés ensemble, en une seule requête
+  const idsProfils = [...new Set([...userIds, ...idsFormateurs])];
+  const { data: profils } = idsProfils.length
+    ? await supabase.from('profiles').select('id,name,role,certifie,reseaux').in('id', idsProfils)
     : { data: [] as any[] };
+  const auteurs = (profils || []).map((p: any) => ({ id: p.id, name: p.name }));
+  const formateurs = (profils || []).filter((p: any) => idsFormateurs.includes(p.id));
+
   const nomDe = new Map((auteurs || []).map((p: any) => [p.id, p.name]));
   const commentaires = (com || []).map((x: any) => ({
     id: x.id,
@@ -55,13 +64,6 @@ export default async function Cours({ params }: { params: { id: string } }) {
     created_at: x.created_at,
     auteur: nomDe.get(x.user_id) || 'Membre',
   }));
-
-  // Formateurs tagués par l'administrateur
-  const { data: liens } = await supabase.from('cours_formateurs').select('profile_id').eq('course_id', c.id);
-  const idsFormateurs = (liens || []).map((l: any) => l.profile_id);
-  const { data: formateurs } = idsFormateurs.length
-    ? await supabase.from('profiles').select('id,name,role,certifie,reseaux').in('id', idsFormateurs)
-    : { data: [] as any[] };
 
   return (
     <>
@@ -95,44 +97,10 @@ export default async function Cours({ params }: { params: { id: string } }) {
         modules={modulesUI}
         commentaires={commentaires}
         acces={acces}
+        formateurs={(formateurs || []) as any[]}
         envoyerCommentaire={publierCommentaire}
         marquerModule={marquerModule}
       />
-
-      {(formateurs || []).length > 0 && (
-        <div style={{ marginTop: 20 }}>
-          <h3>Formateurs du cours</h3>
-          <div style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))' }}>
-            {(formateurs as any[]).map((f) => {
-              const liensRes = Object.entries(f.reseaux || {}).filter(([, v]) => v) as [string, string][];
-              return (
-                <div key={f.id} className="card" style={{ display: 'grid', gap: 8 }}>
-                  <div className="row" style={{ gap: 12 }}>
-                    <div className="avatar">{(f.name || '?').charAt(0).toUpperCase()}</div>
-                    <div>
-                      <strong>{f.name}</strong>
-                      {f.certifie && (
-                        <div style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
-                          ✓ {f.role === 'partenaire' ? 'Partenaire certifié' : 'Formateur certifié'}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {liensRes.length > 0 && (
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      {liensRes.map(([cle, url]) => (
-                        <a key={cle} className="btn ghost sm" href={url} target="_blank" rel="noopener noreferrer">
-                          {RESEAUX[cle] || cle}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </>
   );
 }
