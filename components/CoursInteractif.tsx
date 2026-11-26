@@ -35,6 +35,9 @@ export default function CoursInteractif({
         .cours-liste button.mod{width:100%;text-align:left;background:none;border:0;padding:12px;border-radius:12px;cursor:pointer;color:inherit;display:flex;justify-content:space-between;gap:8px;align-items:center}
         .cours-liste button.mod.actif{background:var(--soft)}
         .cours-liste button.mod:disabled{opacity:.55;cursor:not-allowed}
+        .cours-grid > *{min-width:0}
+        .cours-liste button.mod span{overflow-wrap:anywhere;min-width:0}
+        .cours-liste button.mod span:first-child{flex:1}
       `}</style>
 
       <div className="cours-grid">
