@@ -314,3 +314,25 @@ export async function publierCommentaire(formData: FormData) {
   await supabase.from('commentaires_module').insert({ module_id: moduleId, user_id: user.id, contenu });
   revalidatePath(`/espace/formations/${courseId}`);
 }
+
+
+// Modifie une offre d'abonnement existante
+export async function modifierOffre(formData: FormData) {
+  const { supabase } = await admin();
+  const id = txt(formData, 'id');
+  const best = formData.get('meilleure') === 'on';
+  if (best) await supabase.from('offers').update({ best: false }).neq('id', id);
+  await supabase
+    .from('offers')
+    .update({
+      name: txt(formData, 'nom'),
+      price: Number(txt(formData, 'prix')) || 0,
+      per: txt(formData, 'periode'),
+      feat: lignes(txt(formData, 'avantages')),
+      best,
+    })
+    .eq('id', id);
+  revalidatePath('/espace/admin');
+  revalidatePath('/espace/offres');
+  revalidatePath('/');
+}
