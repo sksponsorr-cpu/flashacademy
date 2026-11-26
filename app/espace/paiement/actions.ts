@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 import { session } from '@/lib/session';
-import { creerCollecte, statutCollecte } from '@/lib/flashpay';
+import { creerCollecte, statutCollecte } from '@/lib/flasshpay';
 
 // Client avec la clé de service : utilisé uniquement côté serveur pour écrire les paiements.
 const db = () =>
@@ -11,7 +11,7 @@ const db = () =>
     auth: { persistSession: false },
   });
 
-// Lance le paiement d'une offre et redirige le membre vers la page FlashPay.
+// Lance le paiement d'une offre et redirige le membre vers la page flasshpay.
 export async function payerOffre(formData: FormData) {
   const { user } = await session();
   if (!user) redirect('/connexion');
@@ -50,7 +50,7 @@ export async function payerOffre(formData: FormData) {
   redirect(url);
 }
 
-// Vérifie auprès de FlashPay le statut d'un paiement, puis active l'accès si c'est réussi.
+// Vérifie auprès de flasshpay le statut d'un paiement, puis active l'accès si c'est réussi.
 export async function confirmerPaiement(tx: string): Promise<'ok' | 'attente' | 'echec'> {
   const { user } = await session();
   if (!user) return 'echec';
