@@ -16,10 +16,25 @@ export async function payerOffre(formData: FormData) {
   const { user } = await session();
   if (!user) redirect('/connexion');
 
+  // Vérifie la configuration avant tout : une variable manquante donnait un échec silencieux.
+  const requises = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'FLASSHPAY_KEY', 'NEXT_PUBLIC_SITE_URL'];
+  const manquantes = requises.filter((k) => !process.env[k]);
+  if (manquantes.length) {
+    console.error('payerOffre : variables manquantes sur le serveur :', manquantes.join(', '));
+    redirect('/espace/offres?erreur=config');
+  }
+
   const offreId = Number(formData.get('offre'));
   const pays = String(formData.get('pays') || 'CM').toUpperCase();
-  const { data: offre } = await db().from('offers').select('id,name,price').eq('id', offreId).maybeSingle();
-  if (!offre) redirect('/espace/offres?erreur=offre');
+  // L'offre est publique (la page Offres la montre déjà) : on la lit avec la session du membre,
+  // pour ne pas dépendre de la clé de service pour cette étape.
+  const { data: offre, error: erreurOffre } = await session().then((x) =>
+    x.supabase.from('offers').select('id,name,price').eq('id', offreId).maybeSingle()
+  );
+  if (erreurOffre || !offre) {
+    console.error('payerOffre : offre introuvable', { offreId, erreur: erreurOffre?.message });
+    redirect('/espace/offres?erreur=offre');
+  }
 
   const tx = `fa-${user.id.slice(0, 8)}-${offre.id}-${Date.now()}`;
   const { error } = await db().from('paiements').insert({
@@ -29,9 +44,12 @@ export async function payerOffre(formData: FormData) {
     pays,
     transaction_id: tx,
   });
-  if (error) redirect('/espace/offres?erreur=enregistrement');
+  if (error) {
+    console.error('payerOffre : enregistrement impossible', error.message);
+    redirect('/espace/offres?erreur=enregistrement');
+  }
 
-  const site = process.env.NEXT_PUBLIC_SITE_URL;
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
   let url = '';
   try {
     const c = await creerCollecte({
