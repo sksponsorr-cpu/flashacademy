@@ -48,7 +48,7 @@ export default async function ProfilMembre({ params }: { params: { id: string } 
           <h2 style={{ margin: '12px 0 2px' }}>
             {p.name || 'Membre'} {p.validated && <span className="tag">✓</span>}
           </h2>
-          <div className="muted">@{(p.name || 'membre').toLowerCase().replace(/\s+/g, '')}{p.role !== 'membre' ? ' · ' + p.role : ''}</div>
+          {p.role !== 'membre' && <div className="muted">{p.role}</div>}
           {p.head && <div className="muted" style={{ marginTop: 2 }}>{p.head}</div>}
           <p style={{ whiteSpace: 'pre-line', margin: '12px 0' }}>
             {p.bio || (isMe ? 'Ajoutez une biographie pour vous présenter.' : 'Pas encore de biographie.')}
