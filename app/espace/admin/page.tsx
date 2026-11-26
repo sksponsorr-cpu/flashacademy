@@ -6,7 +6,7 @@ import ModulesEditor from '@/components/ModulesEditor';
 import { session } from '@/lib/session';
 import { estAdmin, fcfa } from '@/lib/access';
 import {
-  ajouterFormation, supprimerFormation, ajouterOffre, supprimerOffre, basculerMembre, sauverAccueil, modifierOffre,
+  ajouterFormation, modifierFormation, supprimerFormation, ajouterOffre, supprimerOffre, basculerMembre, sauverAccueil, modifierOffre,
   sauverFormateurs, sauverCertification,
   ajouterCategorie, supprimerCategorie, ajouterNiche, supprimerNiche, sauverVideoUne,
 } from '../actions';
@@ -40,7 +40,7 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
   const [{ data: cats }, { data: niches }, { data: cours }, { data: membres }, { data: offres }, { data: reg }] = await Promise.all([
     supabase.from('categories').select('id,slug,nom,emoji,description').order('ordre'),
     supabase.from('niches').select('id,categorie_id,nom,description').order('ordre'),
-    supabase.from('courses').select('id,title,level,niche_id,modules(id)').order('id'),
+    supabase.from('courses').select('id,title,level,niche_id,thumb,modules(id,position,title,duration,video_url)').order('id'),
     supabase.from('profiles').select('id,name,role,sub,banned').order('name'),
     supabase.from('offers').select('*').order('price'),
     supabase.from('settings').select('value').eq('key', 'accueil').maybeSingle(),
@@ -161,6 +161,34 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
                 <input type="hidden" name="id" value={c.id} />
                 <button className="btn danger sm" type="submit">Supprimer</button>
               </form>
+              <details style={{ width: '100%' }}>
+                <summary className="muted" style={{ cursor: 'pointer' }}>Modifier la formation et ses modules</summary>
+                <form action={modifierFormation} style={{ marginTop: 8 }}>
+                  <input type="hidden" name="id" value={c.id} />
+                  <label>Niche</label>
+                  <select name="niche" defaultValue={c.niche_id || ''}>
+                    <option value="">Sans niche (non classée)</option>
+                    {(niches || []).map((n: any) => <option key={n.id} value={n.id}>{nomCat(n.categorie_id)} › {n.nom}</option>)}
+                  </select>
+                  <label>Titre de la formation</label>
+                  <input name="titre" required defaultValue={c.title} />
+                  <label>Niveau</label>
+                  <select name="niveau" defaultValue={c.level}>
+                    <option>Débutant</option>
+                    <option>Intermédiaire</option>
+                    <option>Avancé</option>
+                  </select>
+                  <MediaInput name="miniature" label="Miniature de la formation" defaultValue={c.thumb || ''} type="image" />
+                  <label>Modules</label>
+                  <ModulesEditor
+                    initial={[...(c.modules || [])]
+                      .sort((a: any, b: any) => a.position - b.position)
+                      .map((m: any) => ({ id: m.id, titre: m.title || '', duree: m.duration || '', video: m.video_url || '' }))}
+                  />
+                  <p className="muted" style={{ fontSize: 12 }}>Retirer un module supprime aussi les commentaires et la progression qui lui sont liés.</p>
+                  <button className="btn block" style={{ marginTop: 10 }} type="submit">Enregistrer les modifications</button>
+                </form>
+              </details>
               <details style={{ width: '100%' }}>
                 <summary className="muted" style={{ cursor: 'pointer' }}>Formateurs du cours</summary>
                 <form action={sauverFormateurs} style={{ marginTop: 8 }}>
