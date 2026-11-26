@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import MediaInput from '@/components/MediaInput';
+import LecteurVideo from '@/components/LecteurVideo';
 import { session } from '@/lib/session';
 import { estAdmin, fcfa } from '@/lib/access';
 import {
-  ajouterFormation, supprimerFormation, ajouterOffre, supprimerOffre, basculerMembre, sauverAccueil,
+  ajouterFormation, supprimerFormation, ajouterOffre, supprimerOffre, basculerMembre, sauverAccueil, modifierOffre,
   sauverFormateurs, sauverCertification,
   ajouterCategorie, supprimerCategorie, ajouterNiche, supprimerNiche, sauverVideoUne,
 } from '../actions';
@@ -247,15 +248,39 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
             </form>
           </div>
           {(offres || []).map((o: any) => (
-            <div key={o.id} className="card row">
-              <div className="grow">
-                <strong>{o.name}</strong>
-                <div className="muted">{fcfa(o.price)} · {o.per}</div>
+            <div key={o.id} className="card">
+              <div className="row">
+                <div className="grow">
+                  <strong>{o.name}</strong>{o.best ? ' · Le plus choisi' : ''}
+                  <div className="muted">{fcfa(o.price)} · {o.per}</div>
+                </div>
+                <form action={supprimerOffre}>
+                  <input type="hidden" name="id" value={o.id} />
+                  <button className="btn danger sm" type="submit">Retirer</button>
+                </form>
               </div>
-              <form action={supprimerOffre}>
-                <input type="hidden" name="id" value={o.id} />
-                <button className="btn danger sm" type="submit">Retirer</button>
-              </form>
+              <details style={{ marginTop: 10 }}>
+                <summary className="muted" style={{ cursor: 'pointer' }}>Modifier cette offre</summary>
+                <form action={modifierOffre} style={{ marginTop: 8 }}>
+                  <input type="hidden" name="id" value={o.id} />
+                  <label>Nom de l’offre</label>
+                  <input name="nom" defaultValue={o.name} required />
+                  <label>Prix (FCFA)</label>
+                  <input name="prix" type="number" defaultValue={o.price} />
+                  <label>Période</label>
+                  <select name="periode" defaultValue={o.per}>
+                    <option>Pour 1 an</option>
+                    <option>Par mois</option>
+                    <option>Unique</option>
+                  </select>
+                  <label>Avantages (un par ligne)</label>
+                  <textarea name="avantages" rows={3} defaultValue={(o.feat || []).join('\n')} />
+                  <label className="row" style={{ marginTop: 12 }}>
+                    <input type="checkbox" name="meilleure" defaultChecked={!!o.best} style={{ width: 'auto', margin: 0 }} /> Marquer comme « Le plus choisi »
+                  </label>
+                  <button className="btn sm" style={{ marginTop: 10 }} type="submit">Enregistrer l’offre</button>
+                </form>
+              </details>
             </div>
           ))}
         </>
@@ -278,6 +303,19 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
       {s === 'accueil' && (
         <div className="card">
           <h3>Page d’accueil</h3>
+          <div style={{ margin: '10px 0 16px' }}>
+            <strong>Vidéo de présentation</strong>
+            <p className="muted" style={{ margin: '4px 0 10px', fontSize: 13 }}>
+              Affichée en haut de la page d’accueil. Collez un lien YouTube ou Vimeo, ou choisissez un fichier dans la galerie.
+            </p>
+            {a.video ? (
+              <div style={{ aspectRatio: '16/9', borderRadius: 14, overflow: 'hidden', background: '#000' }}>
+                <LecteurVideo url={a.video} />
+              </div>
+            ) : (
+              <p className="muted" style={{ fontSize: 13 }}>Aucune vidéo enregistrée. Elle n’apparaîtra pas sur l’accueil.</p>
+            )}
+          </div>
           <form action={sauverAccueil}>
             <label>Titre principal</label>
             <input name="titre" defaultValue={a.titre || ''} />
