@@ -16,6 +16,8 @@ type CollecteInput = {
   country_code: string;
   amount: number;
   transaction_id: string;
+  name: string;
+  mobile: string;
   description?: string;
   callback_url?: string;
   failed_callback_url?: string;
@@ -63,6 +65,8 @@ export async function creerCollecte(
       country_code: input.country_code,
       amount: input.amount,
       transaction_id: input.transaction_id,
+      name: input.name,
+      mobile: input.mobile,
       description: input.description,
       callback_url: input.callback_url,
       failed_callback_url: input.failed_callback_url,
