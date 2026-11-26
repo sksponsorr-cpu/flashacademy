@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import MediaInput from '@/components/MediaInput';
 import LecteurVideo from '@/components/LecteurVideo';
+import ModulesEditor from '@/components/ModulesEditor';
 import { session } from '@/lib/session';
 import { estAdmin, fcfa } from '@/lib/access';
 import {
@@ -93,6 +94,7 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
               <input name="nom" required placeholder="Ex : Business en ligne" />
               <label>Description courte</label>
               <input name="description" placeholder="Vendre sur TikTok sans budget publicitaire" />
+              <MediaInput name="miniature" label="Image de la niche (galerie ou lien)" type="image" />
               <label>Ordre d’affichage</label>
               <input name="ordre" type="number" defaultValue={0} />
               <button className="btn block" style={{ marginTop: 14 }} type="submit" disabled={!(cats || []).length}>Créer la niche</button>
@@ -142,8 +144,8 @@ export default async function Admin({ searchParams }: { searchParams: { s?: stri
                 <option>Avancé</option>
               </select>
               <MediaInput name="miniature" label="Miniature de la formation (galerie ou lien)" type="image" />
-              <label>Modules (un par ligne : titre | durée | lien vidéo facultatif)</label>
-              <textarea name="modules" rows={5} placeholder={'Introduction | 5 min | https://youtu.be/...\nCréer son compte | 12 min | https://youtu.be/...'} />
+              <label>Modules</label>
+              <ModulesEditor />
               <button className="btn block" style={{ marginTop: 14 }} type="submit">Publier la formation</button>
             </form>
           </Etape>
