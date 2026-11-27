@@ -19,7 +19,7 @@ export default async function Messages({ searchParams }: { searchParams: { avec?
   const autre = (m: any) => (m.sender_id === user.id ? m.receiver_id : m.sender_id);
   const ids = Array.from(new Set((msgs || []).map(autre)));
   const { data: gens } = ids.length
-    ? await supabase.from('profiles').select('id,name,photo').in('id', ids)
+    ? await supabase.from('profiles').select('id,name,photo,role').in('id', ids)
     : { data: [] as any[] };
   const nomDe = (id: string) => (gens || []).find((g: any) => g.id === id);
 
@@ -62,7 +62,7 @@ export default async function Messages({ searchParams }: { searchParams: { avec?
         ))}
         {fil.length === 0 && <div className="card muted" style={{ textAlign: 'center' }}>Dites bonjour 👋</div>}
       </div>
-      {acces ? (
+      {acces || g?.role === 'admin' ? (
         <ChatForm avec={avec} action={envoyerMessage} />
       ) : (
         <div className="card" style={{ textAlign: 'center', marginTop: 12 }}>
