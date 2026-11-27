@@ -161,7 +161,7 @@ export async function confirmerPaiement(
 
   const { data: paiement, error } = await db()
     .from('paiements')
-    .select('user_id,status')
+    .select('user_id,status,flashpay_ref')
     .eq('transaction_id', tx)
     .maybeSingle();
 
@@ -171,10 +171,13 @@ export async function confirmerPaiement(
 
   if (paiement.status === 'paid') return 'ok';
 
+  // FlashPay ne connaît que sa référence FP-… : sans elle, on attend le webhook.
+  if (!paiement.flashpay_ref) return 'attente';
+
   let statut: string;
 
   try {
-    statut = await statutCollecte(tx);
+    statut = await statutCollecte(paiement.flashpay_ref);
   } catch (error) {
     console.error('Vérification FlashPay:', error);
     return 'attente';
