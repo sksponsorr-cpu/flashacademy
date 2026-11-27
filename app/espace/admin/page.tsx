@@ -5,6 +5,7 @@ import LecteurVideo from '@/components/LecteurVideo';
 import ModulesEditor from '@/components/ModulesEditor';
 import { session } from '@/lib/session';
 import { estAdmin, fcfa } from '@/lib/access';
+import AccesManuel from '@/components/AccesManuel';
 import {
   ajouterFormation,
   modifierFormation,
@@ -669,6 +670,8 @@ export default async function Admin({
               </button>
             </form>
           </div>
+
+          <AccesManuel offres={(offres || []) as any[]} />
 
           {(offres || []).map((o: any) => (
             <div key={o.id} className="card">
