@@ -21,7 +21,7 @@ export default async function Cours({ params }: { params: { id: string } }) {
 
   const { data: c } = await supabase
     .from('courses')
-    .select('id,title,level,emoji,thumb,niches(id,nom),modules(id,position,title,duration,video_url)')
+    .select('id,title,level,emoji,thumb,niches(id,nom),modules(id,position,title,duration,video_url,gratuit)')
     .eq('id', params.id)
     .maybeSingle();
 
@@ -31,6 +31,7 @@ export default async function Cours({ params }: { params: { id: string } }) {
     (a: any, b: any) => a.position - b.position
   );
 
+  // Les commentaires sont publics : tout visiteur peut les lire.
   const idsModules = mods.map((m: any) => m.id);
 
   // Requêtes indépendantes lancées en parallèle.
@@ -73,8 +74,9 @@ export default async function Cours({ params }: { params: { id: string } }) {
     id: m.id,
     title: m.title,
     duration: m.duration,
-    video_url: m.video_url,
-    verrouille: !acces && i > 0,
+    // L'URL vidéo n'est jamais envoyée au navigateur pour un module verrouillé.
+    video_url: acces || i === 0 || m.gratuit ? m.video_url : null,
+    verrouille: !acces && i > 0 && !m.gratuit,
     fait: faits.has(m.id),
   }));
 
@@ -95,7 +97,10 @@ export default async function Cours({ params }: { params: { id: string } }) {
   const auteurs = (profils || []).map((p: any) => ({
     id: p.id,
     name: p.name,
+    role: p.role,
+    certifie: p.certifie,
   }));
+  const parId = new Map(auteurs.map((a: any) => [a.id, a]));
 
   const formateurs = (profils || []).filter((p: any) =>
     idsFormateurs.includes(p.id)
@@ -109,6 +114,9 @@ export default async function Cours({ params }: { params: { id: string } }) {
     contenu: x.contenu,
     created_at: x.created_at,
     auteur: nomDe.get(x.user_id) || 'Membre',
+    auteur_id: x.user_id,
+    auteur_role: parId.get(x.user_id)?.role,
+    auteur_certifie: parId.get(x.user_id)?.certifie,
   }));
 
   return (
