@@ -146,3 +146,42 @@ label{display:block;margin-top:14px;font-size:13px;color:var(--muted);font-weigh
 .video-une h2{padding:18px 20px 22px;margin:0;font-size:24px;font-weight:800;letter-spacing:-.4px;line-height:1.2}
 .video-une:hover{transform:translateY(-2px)}
 .video-une{transition:transform .35s cubic-bezier(.22,1,.36,1)}
+
+/* ===== Version bureau et animations style Apple ===== */
+
+/* Le contenu prend la largeur de l'écran sur ordinateur, avec une limite de lecture confortable. */
+@media (min-width:1024px){
+  main{max-width:1180px;padding:32px 40px 80px}
+  main > section{max-width:none;margin:0;padding:0;animation:none}
+  .card{padding:24px}
+  h1{font-size:44px;letter-spacing:-1.2px;line-height:1.08}
+  h2{font-size:30px;letter-spacing:-.6px}
+  body.app{padding-top:72px;padding-bottom:0}
+  /* La barre de navigation passe en haut sur ordinateur. */
+  .tabbar{top:0;bottom:auto;border-top:0;border-bottom:1px solid var(--line);padding:10px 24px;justify-content:center;gap:8px}
+  .tabbar a{flex:0 0 auto;min-width:110px;font-size:13px;padding:6px 14px;border-radius:12px}
+  .tabbar a span{display:inline;font-size:16px;margin-right:6px}
+  .bar{top:72px;padding:14px 40px}
+  .grid{grid-template-columns:repeat(3,1fr)}
+  .offers{grid-template-columns:repeat(2,1fr)}
+}
+
+/* Page formation : vidéo et contenu à gauche, sommaire à droite. */
+.cours-layout{display:grid;gap:28px;grid-template-columns:minmax(0,1fr)}
+.cours-layout > *{min-width:0}
+@media (min-width:1024px){
+  .cours-layout{grid-template-columns:minmax(0,1fr) 360px;align-items:start}
+  .cours-side{position:sticky;top:110px}
+}
+.cours-video{position:relative;width:100%;aspect-ratio:16/9;background:#000;border-radius:20px;overflow:hidden}
+.cours-video video,.cours-video iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border:0}
+
+/* Animations d'apparition au défilement (Reveal). */
+.reveal{opacity:0;transform:translateY(28px);filter:blur(6px);transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1),filter .9s cubic-bezier(.16,1,.3,1);transition-delay:var(--d,0ms)}
+.reveal.in{opacity:1;transform:none;filter:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;filter:none;transition:none}}
+
+/* Accroche de la page d'accueil : titre qui s'affiche mot par mot. */
+.mot{display:inline-block;opacity:0;transform:translateY(.4em);animation:mot .8s cubic-bezier(.16,1,.3,1) forwards;animation-delay:var(--d,0ms)}
+@keyframes mot{to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.mot{opacity:1;transform:none;animation:none}}
