@@ -137,96 +137,17 @@ export default async function Cours({ params }: { params: { id: string } }) {
         )}
       </nav>
 
-      {/* Présentation visuelle de la formation */}
-      <section style={{ margin: '14px 0 18px' }}>
-        <div
-          style={{
-            position: 'relative',
-            aspectRatio: '16 / 8',
-            minHeight: 150,
-            maxHeight: 270,
-            overflow: 'hidden',
-            borderRadius: 18,
-            background: 'linear-gradient(135deg,#12356d,#5936a0)',
-            display: 'grid',
-            placeItems: 'center',
-          }}
-        >
-          {c.thumb ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={c.thumb}
-              alt={`Miniature ${c.title}`}
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-              }}
-            />
-          ) : (
-            <span
-              style={{
-                fontSize: 64,
-                filter: 'drop-shadow(0 8px 12px #0008)',
-              }}
-            >
-              {c.emoji || '🎓'}
-            </span>
-          )}
-
-          <span
-            style={{
-              position: 'absolute',
-              left: 12,
-              bottom: 12,
-              padding: '5px 10px',
-              borderRadius: 30,
-              color: '#fff',
-              background: '#080d1dcc',
-              fontSize: 12,
-              fontWeight: 700,
-            }}
-          >
-            {c.level || 'Formation'}
-          </span>
+      {/* En-tête compact : la vidéo du module vient juste après */}
+      <section style={{ margin: '10px 0 16px' }}>
+        <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
+          <div>
+            <span className="tag">🎯 {c.level || 'Tous niveaux'}</span>
+            <h1 style={{ margin: '8px 0 0', fontSize: 22 }}>{c.title}</h1>
+          </div>
+          <span className="muted" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>{suivi} % suivi</span>
         </div>
-
-        <div
-          className="row"
-          style={{
-            margin: '14px 0 8px',
-            gap: 12,
-            alignItems: 'flex-start',
-          }}
-        >
-          <h1
-            style={{
-              margin: 0,
-              fontSize: 24,
-              lineHeight: 1.2,
-              flex: 1,
-            }}
-          >
-            {c.title}
-          </h1>
-        </div>
-
-        <div
-          className="row"
-          style={{
-            gap: 8,
-            flexWrap: 'wrap',
-          }}
-        >
-          <span className="pill">
-            📚 {mods.length} module{mods.length > 1 ? 's' : ''}
-          </span>
-
-          <span className="pill">
-            🎯 {c.level || 'Tous niveaux'}
-          </span>
-
-          <span className="pill">▶ Vidéos et exercices</span>
+        <div style={{ height: 5, background: 'var(--line)', borderRadius: 5, overflow: 'hidden', marginTop: 12 }}>
+          <div style={{ width: `${suivi}%`, height: '100%', background: 'var(--accent)', transition: 'width 1s' }} />
         </div>
       </section>
 
