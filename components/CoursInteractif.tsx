@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import Certifie from '@/components/Certifie';
 import LecteurVideo from '@/components/LecteurVideo';
 
 type Module = {
@@ -17,6 +19,9 @@ type Commentaire = {
   module_id: number;
   contenu: string;
   auteur: string;
+  auteur_id: string;
+  auteur_role?: string;
+  auteur_certifie?: boolean;
   created_at: string;
 };
 
@@ -362,7 +367,8 @@ export default function CoursInteractif({
 
                       <div>
                         <strong style={{ fontSize: 14 }}>
-                          {c.auteur}
+                          <Link href={`/espace/membres/${c.auteur_id}`} style={{ color: 'inherit' }}>{c.auteur}</Link>
+                          <Certifie certifie={c.auteur_certifie} role={c.auteur_role} />
                         </strong>
 
                         <p
@@ -515,7 +521,8 @@ export default function CoursInteractif({
 
                         <div>
 
-                          <strong>{f.name}</strong>
+                          <Link href={`/espace/membres/${f.id}`} style={{ color: 'inherit' }}><strong>{f.name}</strong></Link>
+                          <Certifie certifie={f.certifie} role={f.role} />
 
                           {f.certifie && (
                             <div
