@@ -95,7 +95,10 @@ export async function envoyerMessage(formData: FormData) {
   const contenu = txt(formData, 'contenu');
 
   if (!contenu || !avec) return;
-  if (!aAcces(profil)) redirect('/espace/offres');
+
+  // Un membre sans abonnement peut écrire à l'administrateur uniquement.
+  const { data: dest } = await supabase.from('profiles').select('role').eq('id', avec).maybeSingle();
+  if (!aAcces(profil) && dest?.role !== 'admin') redirect('/espace/offres');
 
   const { error } = await supabase
     .from('messages')
