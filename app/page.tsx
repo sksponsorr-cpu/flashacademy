@@ -43,27 +43,6 @@ const DEFAUT = {
   ],
 };
 
-const OFFRES_DEFAUT = [
-  {
-    name: 'Accès mensuel',
-    price: 19000,
-    per: 'Par mois',
-    feat: ['Accès aux formations', 'Accès à la communauté'],
-    best: false,
-  },
-  {
-    name: 'Accès annuel',
-    price: 65000,
-    per: 'Pour 1 an',
-    feat: [
-      'Toutes les formations',
-      'Sessions live incluses',
-      'Mises à jour incluses',
-      'Accès à la communauté',
-    ],
-    best: true,
-  },
-];
 
 export default async function Accueil() {
   const supabase = createClient();
@@ -106,9 +85,8 @@ export default async function Accueil() {
       : DEFAUT.faq,
   };
 
-  const liste: any[] = offres?.length
-    ? offres
-    : OFFRES_DEFAUT;
+  // Seules les offres enregistrées par l'administrateur sont affichées.
+  const liste: any[] = offres || [];
 
   const formations: any[] = cours || [];
 
