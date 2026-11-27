@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { session } from '@/lib/session';
 import { peutAcceder, initiale } from '@/lib/access';
 import { sauverProfil, publierRecit } from '../../actions';
+import Certifie from '@/components/Certifie';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,7 +39,7 @@ export default async function ProfilMembre({ params }: { params: { id: string } 
           </div>
 
           <div className="row" style={{ justifyContent: 'flex-end', marginTop: -40, position: 'relative' }}>
-            {!isMe && (acces ? (
+            {!isMe && (acces || p.role === 'admin' ? (
               <Link className="btn sm" href={`/espace/messages?avec=${p.id}`}>Envoyer un message</Link>
             ) : (
               <Link className="btn sm off" href="/espace/offres">🔒 Message (abonnés)</Link>
@@ -46,7 +47,7 @@ export default async function ProfilMembre({ params }: { params: { id: string } 
           </div>
 
           <h2 style={{ margin: '12px 0 2px' }}>
-            {p.name || 'Membre'} {p.validated && <span className="tag">✓</span>}
+            {p.name || 'Membre'}<Certifie certifie={p.certifie} role={p.role} />
           </h2>
           {p.role !== 'membre' && <div className="muted">{p.role}</div>}
           {p.head && <div className="muted" style={{ marginTop: 2 }}>{p.head}</div>}
