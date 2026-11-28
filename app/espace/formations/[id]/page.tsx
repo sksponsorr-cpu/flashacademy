@@ -16,7 +16,7 @@ const RESEAUX: Record<string, string> = {
 };
 
 export default async function Cours({ params }: { params: { id: string } }) {
-  const { supabase, profil } = await session();
+  const { supabase, profil, user } = await session();
   const acces = peutAcceder(profil);
 
   const { data: c } = await supabase
@@ -47,7 +47,7 @@ export default async function Cours({ params }: { params: { id: string } }) {
       idsModules.length
         ? supabase
             .from('commentaires_module')
-            .select('id,module_id,user_id,contenu,created_at')
+            .select('id,module_id,user_id,contenu,created_at,parent_id')
             .in('module_id', idsModules)
             .order('created_at')
         : Promise.resolve({ data: [] as any[] }),
@@ -108,6 +108,17 @@ export default async function Cours({ params }: { params: { id: string } }) {
 
   const nomDe = new Map((auteurs || []).map((p: any) => [p.id, p.name]));
 
+  const idsCom = (com || []).map((x: any) => x.id);
+  const { data: likesRows } = idsCom.length
+    ? await supabase.from('comment_likes').select('comment_id,user_id').in('comment_id', idsCom)
+    : { data: [] as any[] };
+  const likesDe = new Map<number, number>();
+  const aimeDe = new Set<number>();
+  (likesRows || []).forEach((l: any) => {
+    likesDe.set(l.comment_id, (likesDe.get(l.comment_id) || 0) + 1);
+    if (user && l.user_id === user.id) aimeDe.add(l.comment_id);
+  });
+
   const commentaires = (com || []).map((x: any) => ({
     id: x.id,
     module_id: x.module_id,
@@ -117,6 +128,9 @@ export default async function Cours({ params }: { params: { id: string } }) {
     auteur_id: x.user_id,
     auteur_role: parId.get(x.user_id)?.role,
     auteur_certifie: parId.get(x.user_id)?.certifie,
+    parent_id: x.parent_id,
+    likes: likesDe.get(x.id) || 0,
+    aime: aimeDe.has(x.id),
   }));
 
   return (
@@ -138,7 +152,7 @@ export default async function Cours({ params }: { params: { id: string } }) {
       </nav>
 
       {/* En-tête compact : la vidéo du module vient juste après */}
-      <section style={{ margin: '10px 0 16px' }}>
+      <div style={{ margin: '10px 0 16px' }}>
         <div className="row" style={{ justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
           <div>
             <span className="tag">🎯 {c.level || 'Tous niveaux'}</span>
@@ -149,36 +163,10 @@ export default async function Cours({ params }: { params: { id: string } }) {
         <div style={{ height: 5, background: 'var(--line)', borderRadius: 5, overflow: 'hidden', marginTop: 12 }}>
           <div style={{ width: `${suivi}%`, height: '100%', background: 'var(--accent)', transition: 'width 1s' }} />
         </div>
-      </section>
+      </div>
 
-      {/* Progression de l'apprenant */}
-      {acces ? (
-        <div style={{ margin: '0 0 16px' }}>
-          <div
-            style={{
-              height: 6,
-              background: 'var(--line)',
-              borderRadius: 99,
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                width: `${suivi}%`,
-                height: '100%',
-                background: 'var(--accent)',
-              }}
-            />
-          </div>
-
-          <p
-            className="muted"
-            style={{ margin: '6px 0 0' }}
-          >
-            {suivi} % suivi
-          </p>
-        </div>
-      ) : (
+      {/* Accès visiteur */}
+      {!acces && (
         <div
           className="card"
           style={{
