@@ -50,8 +50,12 @@ export async function renvoyerCode(formData: FormData) {
 
 export async function demanderReinitialisation(formData: FormData) {
   const supabase = createClient();
-  // Pas de redirectTo : le lien vient du modèle d'email (/auth/confirm) qui ouvre la session.
-  await supabase.auth.resetPasswordForEmail(txt(formData, 'email'));
+  // Le lien de l'email ramène vers /auth/callback, qui ouvre la session
+  // puis envoie vers la page de nouveau mot de passe.
+  const site = process.env.NEXT_PUBLIC_SITE_URL || '';
+  await supabase.auth.resetPasswordForEmail(txt(formData, 'email'), {
+    redirectTo: `${site}/auth/callback?next=/connexion/nouveau-mot-de-passe`,
+  });
   redirect('/connexion/mot-de-passe-oublie?envoye=1');
 }
 
