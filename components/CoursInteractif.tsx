@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Certifie from '@/components/Certifie';
+import FilCommentaires from '@/components/FilCommentaires';
 import LecteurVideo from '@/components/LecteurVideo';
 
 type Module = {
@@ -22,6 +23,9 @@ type Commentaire = {
   auteur_id: string;
   auteur_role?: string;
   auteur_certifie?: boolean;
+  parent_id?: number | null;
+  likes?: number;
+  aime?: boolean;
   created_at: string;
 };
 
@@ -334,57 +338,7 @@ export default function CoursInteractif({
                   </p>
                 )}
 
-                <div
-                  style={{
-                    display: 'grid',
-                    gap: 12,
-                  }}
-                >
-
-                  {liste.length === 0 && (
-                    <p className="muted">
-                      Aucun commentaire pour ce module.
-                    </p>
-                  )}
-
-                  {liste.map((c) => (
-                    <div
-                      key={c.id}
-                      style={{
-                        display: 'flex',
-                        gap: 10,
-                      }}
-                    >
-
-                      <div
-                        className="avatar"
-                        style={{ flexShrink: 0 }}
-                      >
-                        {(c.auteur || '?')
-                          .charAt(0)
-                          .toUpperCase()}
-                      </div>
-
-                      <div>
-                        <strong style={{ fontSize: 14 }}>
-                          <Link href={`/espace/membres/${c.auteur_id}`} style={{ color: 'inherit' }}>{c.auteur}</Link>
-                          <Certifie certifie={c.auteur_certifie} role={c.auteur_role} />
-                        </strong>
-
-                        <p
-                          style={{
-                            margin: '2px 0 0',
-                            whiteSpace: 'pre-line',
-                          }}
-                        >
-                          {c.contenu}
-                        </p>
-                      </div>
-
-                    </div>
-                  ))}
-
-                </div>
+                <FilCommentaires items={liste as any} cours={String(courseId)} module={mod.id} acces={acces} />
               </>
             )}
 
