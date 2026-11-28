@@ -112,8 +112,8 @@ export default async function Cours({ params }: { params: { id: string } }) {
   const { data: likesRows } = idsCom.length
     ? await supabase.from('comment_likes').select('comment_id,user_id').in('comment_id', idsCom)
     : { data: [] as any[] };
-  const likesDe = new Map<number, number>();
-  const aimeDe = new Set<number>();
+  const likesDe = new Map<string, number>();
+  const aimeDe = new Set<string>();
   (likesRows || []).forEach((l: any) => {
     likesDe.set(l.comment_id, (likesDe.get(l.comment_id) || 0) + 1);
     if (user && l.user_id === user.id) aimeDe.add(l.comment_id);
