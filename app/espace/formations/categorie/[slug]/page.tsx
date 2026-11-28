@@ -82,7 +82,7 @@ export default async function Categorie({ params }: { params: { slug: string } }
             >
               {n.miniature ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <img loading="lazy" decoding="async"
                   src={n.miniature}
                   alt={`Miniature ${n.nom}`}
                   style={{
