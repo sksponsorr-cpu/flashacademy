@@ -1,6 +1,6 @@
 'use client';
 
-// Formulaire d'envoi de message avec un petit son à l'envoi.
+// Barre de saisie façon WhatsApp, avec un petit son à l'envoi.
 export default function ChatForm({
   avec,
   action,
@@ -27,10 +27,10 @@ export default function ChatForm({
   }
 
   return (
-    <form action={action} onSubmit={son} className="row" style={{ marginTop: 12 }}>
+    <form action={action} onSubmit={son} className="wa-compo">
       <input type="hidden" name="avec" value={avec} />
-      <input name="contenu" placeholder="Votre message" required autoComplete="off" style={{ marginTop: 0 }} />
-      <button className="btn" type="submit">Envoyer</button>
+      <input name="contenu" placeholder="Écrire un message" required autoComplete="off" />
+      <button type="submit" aria-label="Envoyer">➤</button>
     </form>
   );
 }
