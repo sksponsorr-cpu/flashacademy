@@ -3,14 +3,14 @@ import Certifie from '@/components/Certifie';
 import { repondreCommentaire, basculerLike } from '@/app/espace/commentaires-actions';
 
 export type Fil = {
-  id: number;
+  id: string;
   contenu: string;
   created_at: string;
   auteur: string;
   auteur_id: string;
   auteur_role?: string;
   auteur_certifie?: boolean;
-  parent_id?: number | null;
+  parent_id?: string | null;
   likes?: number;
   aime?: boolean;
 };
@@ -82,7 +82,7 @@ export default function FilCommentaires({
 
   const ids = new Set(items.map((i) => i.id));
   const racines = items.filter((i) => !i.parent_id || !ids.has(i.parent_id));
-  const reponsesDe = (id: number) => items.filter((i) => i.parent_id === id);
+  const reponsesDe = (id: string) => items.filter((i) => i.parent_id === id);
 
   return (
     <div className="fc">
