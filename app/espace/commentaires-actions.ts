@@ -9,7 +9,7 @@ export async function repondreCommentaire(formData: FormData) {
   if (!user || !peutAcceder(profil)) return;
 
   const module = Number(formData.get('module'));
-  const parent = Number(formData.get('parent'));
+  const parent = String(formData.get('parent') || '');
   const cours = String(formData.get('cours') || '');
   const contenu = String(formData.get('contenu') || '').trim().slice(0, 1000);
   if (!module || !parent || !contenu) return;
@@ -28,7 +28,7 @@ export async function basculerLike(formData: FormData) {
   const { supabase, user, profil } = await session();
   if (!user || !peutAcceder(profil)) return;
 
-  const comment = Number(formData.get('comment'));
+  const comment = String(formData.get('comment') || '');
   const cours = String(formData.get('cours') || '');
   if (!comment) return;
 
