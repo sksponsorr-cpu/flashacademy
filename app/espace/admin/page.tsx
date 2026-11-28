@@ -279,7 +279,7 @@ export default async function Admin({
                       }}
                     >
                       {n.miniature ? (
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={n.miniature}
                           alt=""
                           style={{
