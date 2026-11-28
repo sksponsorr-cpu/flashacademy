@@ -94,7 +94,7 @@ export default function MediaField({ label, value, onChange, type = 'tout' }: Pr
             <video src={value} controls style={{ width: '100%' }} />
           ) : estImage || type === 'image' ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={value} alt="Aperçu" style={{ width: '100%', display: 'block' }} />
+            <img loading="lazy" decoding="async" src={value} alt="Aperçu" style={{ width: '100%', display: 'block' }} />
           ) : (
             <p style={{ color: '#fff', padding: 12, margin: 0 }}>Lien non reconnu : utilisez YouTube, Vimeo ou un fichier.</p>
           )}
