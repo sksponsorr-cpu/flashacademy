@@ -35,7 +35,7 @@ export default function LecteurVideo({ url, poster }: { url?: string | null; pos
       poster={poster || undefined}
       controls
       playsInline
-      preload="metadata"
+      preload="none"
       onError={() => setErreur(true)}
       style={{ width: '100%', height: '100%', background: '#000' }}
     />
