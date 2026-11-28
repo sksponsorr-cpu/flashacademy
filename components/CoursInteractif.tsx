@@ -23,7 +23,7 @@ type Commentaire = {
   auteur_id: string;
   auteur_role?: string;
   auteur_certifie?: boolean;
-  parent_id?: number | null;
+  parent_id?: string | null;
   likes?: number;
   aime?: boolean;
   created_at: string;
